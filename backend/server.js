@@ -27,8 +27,9 @@ app.use(session({
   resave:            false,
   saveUninitialized: false,
   cookie: {
-    secure:   false,
+    secure:   process.env.NODE_ENV === "production",
     httpOnly: true,
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     maxAge:   7 * 24 * 60 * 60 * 1000,
   }
 }))
@@ -439,3 +440,4 @@ app.listen(PORT, () => {
   console.log(`🔐 Auth: Session-based (email + password)`)
   console.log(`🗄️  Database: SQLite\n`)
 })
+

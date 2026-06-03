@@ -1,13 +1,16 @@
 import axios from "axios"
 
+// In production use the real backend URL, in dev use proxy
+const BASE = import.meta.env.VITE_API_URL || ""
+
 const api = axios.create({
-  baseURL:         "/api",
+  baseURL:         BASE + "/api",
   timeout:         20000,
   withCredentials: true,
 })
 
 const authApi = axios.create({
-  baseURL:         "/auth",
+  baseURL:         BASE + "/auth",
   timeout:         10000,
   withCredentials: true,
 })
