@@ -16,7 +16,18 @@ const cache = new NodeCache({ stdTTL: parseInt(process.env.CACHE_TTL) || 300 })
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(cors({
-  origin:      process.env.FRONTEND_URL || "http://localhost:5173",
+  origin: function(origin, callback) {
+    const allowed = [
+      "http://localhost:5173",
+      "https://dsa-analyzer-pearl.vercel.app",
+    ]
+    // Allow if origin matches or no origin (mobile apps, Postman)
+    if (!origin || allowed.some(o => origin.replace(/\/$/, "") === o.replace(/\/$/, ""))) {
+      callback(null, true)
+    } else {
+      callback(new Error("Not allowed by CORS: " + origin))
+    }
+  },
   credentials: true,
 }))
 app.use(express.json())
