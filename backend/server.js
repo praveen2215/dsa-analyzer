@@ -12,6 +12,7 @@ const passport       = require("./auth")
 const { userQueries, profileQueries, historyQueries } = require("./database")
 
 const app   = express()
+app.set("trust proxy", 1)
 const cache = new NodeCache({ stdTTL: parseInt(process.env.CACHE_TTL) || 300 })
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
@@ -38,10 +39,11 @@ app.use(session({
   resave:            false,
   saveUninitialized: false,
   cookie: {
-    secure:   false,
-    httpOnly: true,
-    maxAge:   7 * 24 * 60 * 60 * 1000,
-  }
+  secure:   true,
+  httpOnly: true,
+  sameSite: "none",
+  maxAge:   7 * 24 * 60 * 60 * 1000,
+}
 }))
 
 app.use(passport.initialize())
