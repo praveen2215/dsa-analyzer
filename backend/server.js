@@ -217,11 +217,12 @@ app.get("/auth/me", (req, res) => {
 })
 
 // ─── Saved Profiles Routes ────────────────────────────────────────────────────
-app.get("/your-route", async (req, res) => {
+app.get("/auth/profiles", requireAuth, async (req, res) => {
   try {
     const profiles = await profileQueries.getByUser(req.user.id);
     res.json(profiles);
   } catch (err) {
+    console.error("Get profiles error:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -370,23 +371,29 @@ app.get("/api/user/:username", requireAuth, async (req, res) => {
     }
 
     // Save to history & profiles
-    try {
-      await historyQueries.add({
-        id:                uuidv4(),
-        user_id:           req.user.id,
-        leetcode_username: username,
-        total_solved:      result.solved.total,
-        rating:            result.contest.rating,
-      })
-      await profileQueries.save({
-        id:                uuidv4(),
-        user_id:           req.user.id,
-        leetcode_username: username,
-        nickname:          null,
-        is_primary:        0,
-        last_analyzed:     new Date().toISOString(),
-      })
-    } catch(_) {}
+try {
+  await historyQueries.add({
+    id: uuidv4(),
+    user_id: req.user.id,
+    leetcode_username: username,
+    total_solved: result.solved.total,
+    rating: result.contest.rating,
+  });
+
+  await profileQueries.save({
+    id: uuidv4(),
+    user_id: req.user.id,
+    leetcode_username: username,
+    nickname: null,
+    is_primary: 0,
+    last_analyzed: new Date().toISOString(),
+  });
+
+  console.log("Profile saved successfully:", username);
+
+} catch (err) {
+  console.error("Save profile error:", err);
+}
 
     cache.set(cacheKey, result)
     res.json(result)
