@@ -1,9 +1,3 @@
-console.log("NODE_ENV =", process.env.NODE_ENV);
-console.log("DATABASE_URL exists =", !!process.env.DATABASE_URL);
-
-const isProduction = process.env.NODE_ENV === "production";
-
-console.log("isProduction =", isProduction);
 const { Pool } = require("pg")
 
 // Use PostgreSQL in production, SQLite in development
