@@ -221,9 +221,7 @@ app.get("/auth/profiles", requireAuth, async (req, res) => {
   try {
     const profiles = await profileQueries.getByUser(req.user.id);
 
-    console.log("Fetched profiles:", profiles);
-
-    res.json(profiles);
+    res.json({ profiles });
   } catch (err) {
     console.error("Get profiles error:", err);
     res.status(500).json({ error: err.message });
