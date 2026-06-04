@@ -217,10 +217,14 @@ app.get("/auth/me", (req, res) => {
 })
 
 // ─── Saved Profiles Routes ────────────────────────────────────────────────────
-app.get("/auth/profiles", requireAuth, (req, res) => {
-  const profiles = await profileQueries.getByUser(req.user.id)
-  res.json({ profiles })
-})
+app.get("/your-route", async (req, res) => {
+  try {
+    const profiles = await profileQueries.getByUser(req.user.id);
+    res.json(profiles);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.post("/auth/profiles", requireAuth, (req, res) => {
   const { leetcode_username, nickname, is_primary } = req.body
@@ -241,7 +245,7 @@ app.post("/auth/profiles", requireAuth, (req, res) => {
   }
 })
 
-app.delete("/auth/profiles/:username", requireAuth, (req, res) => {
+app.delete("/auth/profiles/:username", requireAuth, async (req, res) => {
   await profileQueries.delete(req.user.id, req.params.username)
   res.json({ message: "Profile removed." })
 })
@@ -428,7 +432,7 @@ app.get("/api/user/:username/recent", requireAuth, async (req, res) => {
 })
 
 // Analysis history
-app.get("/auth/history", requireAuth, (req, res) => {
+app.get("/auth/history", requireAuth, async (req, res) => {
   const history = await historyQueries.getByUser(req.user.id)
   res.json({ history })
 })
