@@ -458,5 +458,7 @@ const PORT = process.env.PORT || 5000
 app.listen(PORT, () => {
   console.log(`\n🚀 DSA Analyzer Backend running on http://localhost:${PORT}`)
   console.log(`🔐 Auth: Session-based (email + password)`)
-  console.log(`🗄️  Database: SQLite\n`)
+  console.log(
+  `🗄️ Database: ${process.env.DATABASE_URL ? "PostgreSQL" : "SQLite"}`
+);
 })
