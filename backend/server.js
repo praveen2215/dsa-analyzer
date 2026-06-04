@@ -6,6 +6,7 @@ const NodeCache      = require("node-cache")
 const rateLimit      = require("express-rate-limit")
 const session        = require("express-session")
 const ConnectSQLite  = require("connect-sqlite3")(session)
+const pgSession      = require("connect-pg-simple")(session)
 const bcrypt         = require("bcryptjs")
 const { v4: uuidv4 } = require("uuid")
 const passport       = require("./auth")
@@ -34,7 +35,9 @@ app.use(cors({
 app.use(express.json())
 
 app.use(session({
-  store:             new ConnectSQLite({ db: "sessions.db", dir: __dirname }),
+store: process.env.NODE_ENV === "production"
+  ? new pgSession({ conString: process.env.DATABASE_URL, tableName: "sessions", createTableIfMissing: true })
+  : new ConnectSQLite({ db: "sessions.db", dir: __dirname }),
   secret:            process.env.SESSION_SECRET || "fallback_secret",
   resave:            false,
   saveUninitialized: false,
@@ -166,14 +169,14 @@ app.post("/auth/register", async (req, res) => {
     return res.status(400).json({ error: "Username can only contain letters, numbers and underscores." })
 
   try {
-    if (userQueries.findByEmail.get(email))
+    if (await userQueries.findByEmail(email))
       return res.status(409).json({ error: "An account with this email already exists." })
-    if (userQueries.findByUsername.get(username))
+    if (await userQueries.findByUsername(username))
       return res.status(409).json({ error: "This username is already taken." })
 
     const hashed = await bcrypt.hash(password, 12)
     const user   = { id: uuidv4(), email, username, password: hashed, google_id: null, avatar: null }
-    userQueries.create.run(user)
+    await userQueries.create(user)
 
     const { password: _, ...safeUser } = user
     req.login(safeUser, err => {
@@ -215,7 +218,7 @@ app.get("/auth/me", (req, res) => {
 
 // ─── Saved Profiles Routes ────────────────────────────────────────────────────
 app.get("/auth/profiles", requireAuth, (req, res) => {
-  const profiles = profileQueries.getByUser.all(req.user.id)
+  const profiles = await profileQueries.getByUser(req.user.id)
   res.json({ profiles })
 })
 
@@ -239,7 +242,7 @@ app.post("/auth/profiles", requireAuth, (req, res) => {
 })
 
 app.delete("/auth/profiles/:username", requireAuth, (req, res) => {
-  profileQueries.delete.run(req.user.id, req.params.username)
+  await profileQueries.delete(req.user.id, req.params.username)
   res.json({ message: "Profile removed." })
 })
 
@@ -364,14 +367,14 @@ app.get("/api/user/:username", requireAuth, async (req, res) => {
 
     // Save to history & profiles
     try {
-      historyQueries.add.run({
+      await historyQueries.add({
         id:                uuidv4(),
         user_id:           req.user.id,
         leetcode_username: username,
         total_solved:      result.solved.total,
         rating:            result.contest.rating,
       })
-      profileQueries.save.run({
+      await profileQueries.save({
         id:                uuidv4(),
         user_id:           req.user.id,
         leetcode_username: username,
@@ -426,7 +429,7 @@ app.get("/api/user/:username/recent", requireAuth, async (req, res) => {
 
 // Analysis history
 app.get("/auth/history", requireAuth, (req, res) => {
-  const history = historyQueries.getByUser.all(req.user.id)
+  const history = await historyQueries.getByUser(req.user.id)
   res.json({ history })
 })
 
