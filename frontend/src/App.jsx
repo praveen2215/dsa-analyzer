@@ -19,7 +19,6 @@ function AppContent() {
     await logout()
   }
 
-  // Checking auth
   if (authLoading) {
     return (
       <div style={{ display:"flex", alignItems:"center", justifyContent:"center", minHeight:"100vh", flexDirection:"column", gap:16, background:"#0a0e1a" }}>
@@ -29,12 +28,8 @@ function AppContent() {
     )
   }
 
-  // NOT logged in — show ONLY login page, nothing else
-  if (!user) {
-    return <LoginPage />
-  }
+  if (!user) return <LoginPage />
 
-  // Logged in — full app
   return (
     <>
       <div className="grid-bg" />
@@ -57,7 +52,7 @@ function AppContent() {
         {!data && !loading && !error && <LandingPage onAnalyze={analyze} />}
 
         {loading && (
-          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"calc(100vh - 64px)", gap:20 }}>
+          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"calc(100vh - 68px)", gap:20 }}>
             <div className="spinner" />
             <div style={{ fontFamily:"var(--font-mono)", color:"var(--text2)", fontSize:14 }}>
               Fetching <span style={{ color:"var(--accent)", fontWeight:600 }}>{username}</span>
@@ -68,14 +63,14 @@ function AppContent() {
         )}
 
         {error && !loading && (
-          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"calc(100vh - 64px)", gap:16 }}>
+          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"calc(100vh - 68px)", gap:16 }}>
             <div style={{ fontSize:48 }}>⚠️</div>
-            <div style={{ fontSize:18, fontWeight:500, color:"var(--red)" }}>User Not Found</div>
-            <div style={{ fontSize:13, color:"var(--text2)", maxWidth:420, textAlign:"center", background:"var(--surface)", border:"0.5px solid var(--border)", borderRadius:12, padding:"16px 20px", lineHeight:1.6 }}>
+            <div style={{ fontSize:18, fontWeight:600, color:"var(--red)" }}>User Not Found</div>
+            <div style={{ fontSize:13, color:"var(--text2)", maxWidth:420, textAlign:"center", background:"var(--surface)", border:"1px solid var(--border)", borderRadius:12, padding:"16px 20px", lineHeight:1.6 }}>
               {error}
             </div>
             <button onClick={() => analyze(username)}
-              style={{ padding:"10px 24px", borderRadius:10, background:"linear-gradient(135deg,#185FA5,#3B6D11)", color:"#fff", border:"none", fontSize:13, fontWeight:500, cursor:"pointer", fontFamily:"var(--font-main)" }}>
+              style={{ padding:"10px 24px", borderRadius:10, background:"var(--accent2)", color:"#fff", border:"none", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-main)" }}>
               Try Again
             </button>
           </div>
