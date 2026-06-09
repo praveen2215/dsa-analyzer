@@ -21,7 +21,7 @@ export default function LoginPage() {
       setSuccess(res.message)
       login(res.user)
     } catch (err) {
-      setError(err.response?.data?.error || "Something went wrong. Please try again.")
+      setError(err.response?.data?.error || "Something went wrong.")
     } finally {
       setLoading(false)
     }
@@ -134,6 +134,7 @@ export default function LoginPage() {
             : <span>Already registered?{" "}<span onClick={() => { setMode("login"); setError(null) }} style={{ color:"#63b3ed", cursor:"pointer", fontWeight:500 }}>Sign in</span></span>
           }
         </div>
+
       </div>
     </div>
   )
