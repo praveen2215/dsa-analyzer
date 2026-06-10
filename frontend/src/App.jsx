@@ -28,10 +28,16 @@ function AppContent() {
     )
   }
 
-  if (!user) return <LoginPage />
+  if (!user) {
+    return (
+      <div style={{ background:"#0a0e1a", minHeight:"100vh" }}>
+        <LoginPage />
+      </div>
+    )
+  }
 
   return (
-    <>
+    <div style={{ background:"#0a0e1a", minHeight:"100vh" }}>
       <div className="grid-bg" />
       <div className="glow-orb orb1" />
       <div className="glow-orb orb2" />
@@ -58,7 +64,6 @@ function AppContent() {
               Fetching <span style={{ color:"var(--accent)", fontWeight:600 }}>{username}</span>
               <span className="pulse">...</span>
             </div>
-            <div style={{ fontSize:12, color:"var(--text3)" }}>Querying LeetCode GraphQL API</div>
           </div>
         )}
 
@@ -70,7 +75,7 @@ function AppContent() {
               {error}
             </div>
             <button onClick={() => analyze(username)}
-              style={{ padding:"10px 24px", borderRadius:10, background:"var(--accent2)", color:"#fff", border:"none", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-main)" }}>
+              style={{ padding:"10px 24px", borderRadius:10, background:"linear-gradient(135deg,#185FA5,#3B6D11)", color:"#fff", border:"none", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-main)" }}>
               Try Again
             </button>
           </div>
@@ -78,7 +83,7 @@ function AppContent() {
 
         {data && !loading && <Dashboard data={data} recent={recent} onAnalyze={analyze} />}
       </div>
-    </>
+    </div>
   )
 }
 
