@@ -14,7 +14,7 @@ export default function LandingPage({ onAnalyze }) {
 
       <div style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"4px 14px", borderRadius:20, background:"rgba(99,179,237,0.08)", border:"0.5px solid rgba(99,179,237,0.25)", marginBottom:20 }}>
         <span style={{ width:6, height:6, borderRadius:"50%", background:"#3B6D11", flexShrink:0 }} />
-        <span style={{ fontSize:11, color:"var(--accent)", fontWeight:500 }}>Live LeetCode data · No extra login required to analyze</span>
+        <span style={{ fontSize:11, color:"var(--accent)", fontWeight:500 }}>Generates real-time insights from LeetCode profiles without requiring additional user authentication.</span>
       </div>
 
       <h1 style={{ fontSize:"clamp(28px,5vw,48px)", fontWeight:700, letterSpacing:"-1.5px", lineHeight:1.15, marginBottom:14, maxWidth:620, color:"var(--text)" }}>
