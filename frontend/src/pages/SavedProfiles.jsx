@@ -36,7 +36,7 @@ export default function SavedProfiles({ onAnalyze, onClose }) {
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
           <div>
             <div style={{ fontSize:16, fontWeight:600 }}>Saved Profiles</div>
-            <div style={{ fontSize:12, color:"var(--text3)", marginTop:3 }}>LeetCode usernames you have analyzed</div>
+            <div style={{ fontSize:12, color:"var(--text3)", marginTop:3 }}>LeetCode profiles you have analyzed recently</div>
           </div>
           <button onClick={onClose} style={{ width:32, height:32, borderRadius:8, background:"var(--surface2)", border:"0.5px solid var(--border)", color:"var(--text2)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
             <i className="fa-solid fa-xmark" />
@@ -62,7 +62,7 @@ export default function SavedProfiles({ onAnalyze, onClose }) {
             <div style={{ textAlign:"center", padding:"40px 0", color:"var(--text3)" }}>
               <i className="fa-solid fa-user-slash" style={{ fontSize:32, opacity:0.3, display:"block", marginBottom:12 }} />
               <div style={{ fontSize:13 }}>No saved profiles yet</div>
-              <div style={{ fontSize:12, marginTop:6 }}>Analyze any LeetCode username to save it here</div>
+              <div style={{ fontSize:12, marginTop:6 }}>Analyze any LeetCode profile to save it here</div>
             </div>
           )}
 
