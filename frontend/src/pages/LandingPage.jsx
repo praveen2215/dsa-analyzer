@@ -25,12 +25,12 @@ export default function LandingPage({ onAnalyze }) {
       </h1>
 
       <p style={{ fontSize:15, color:"var(--text2)", maxWidth:460, lineHeight:1.75, marginBottom:32 }}>
-        Deep analytics on topic mastery, interview readiness, skill gaps, and company-specific prep — powered by real LeetCode data.
+        Transforms real LeetCode performance data into actionable insights on topic mastery, interview readiness, skill gaps, and company-specific preparation.
       </p>
 
       <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:32, color:"var(--text3)", fontSize:12 }}>
         <i className="fa-solid fa-arrow-up" style={{ color:"var(--accent)" }} />
-        Type your LeetCode username in the search bar above
+        Enter your LeetCode username in the search bar above
       </div>
 
       <div style={{ display:"flex", gap:7, flexWrap:"wrap", justifyContent:"center", maxWidth:580, marginBottom:36 }}>
