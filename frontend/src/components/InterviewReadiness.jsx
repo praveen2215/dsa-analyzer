@@ -71,7 +71,7 @@ export default function InterviewReadiness({ data }) {
     <div className="card" style={{ padding:"22px 24px", marginBottom:24 }}>
       <div style={{ fontSize:14, fontWeight:500, marginBottom:3 }}>Interview readiness score</div>
       <div style={{ fontSize:12, color:"var(--text3)", marginBottom:20 }}>
-        Based on problem volume, hard problems, topic coverage and consistency — no contest rating required
+        Based on problem volume, hard problems, topic coverage and consistency.
       </div>
 
       <div style={{ display:"grid", gridTemplateColumns:"200px 1fr", gap:32, alignItems:"start" }}>
