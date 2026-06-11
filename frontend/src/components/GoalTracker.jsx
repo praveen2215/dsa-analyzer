@@ -239,7 +239,7 @@ export default function GoalTracker({ data }) {
       {/* Info notice */}
       <div style={{ padding:"8px 12px", background:"rgba(24,95,165,0.06)", border:"0.5px solid rgba(24,95,165,0.15)", borderRadius:7, fontSize:11, color:"var(--text3)", marginBottom:14, display:"flex", alignItems:"center", gap:8 }}>
         <i className="fa-solid fa-calculator" style={{ color:"#185FA5", flexShrink:0 }} />
-        Total target = Easy + Medium + Hard · Resets every {period === "weekly" ? "Monday" : "1st of the month"}
+        target = Easy + Medium + Hard · Resets every {period === "weekly" ? "Monday" : "1st of the month"}
       </div>
 
       {/* Goal rows */}
