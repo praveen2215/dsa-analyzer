@@ -18,17 +18,43 @@
   --card-radius: 14px;
   --font-main: "Space Grotesk", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
+
+  /* ── Typography scale ───────────────────────────────────── */
+  --fs-xs:   11px;
+  --fs-sm:   12px;
+  --fs-base: 13px;
+  --fs-md:   14px;
+  --fs-lg:   16px;
+  --fs-xl:   20px;
+  --fs-2xl:  28px;
+  --fs-3xl:  40px;
+
+  --lh-tight:  1.2;
+  --lh-normal: 1.5;
+  --lh-loose:  1.75;
+
+  /* ── Spacing scale ──────────────────────────────────────── */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
 
-html, body, #root { background:#0a0e1a; min-height:100vh; }
+html, body, #root { background:var(--bg); min-height:100vh; }
 
 body {
   font-family: var(--font-main);
   color: var(--text);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0.1px;
 }
 
 ::-webkit-scrollbar { width:5px; }
@@ -47,21 +73,95 @@ body {
 .orb1 { width:500px; height:500px; background:rgba(99,179,237,0.055); top:-200px; right:-200px; }
 .orb2 { width:400px; height:400px; background:rgba(183,148,244,0.04);  bottom:-150px; left:-150px; }
 
+/* ── Card system ──────────────────────────────────────────── */
 .card {
   background: var(--surface);
   border: 0.5px solid var(--border);
   border-radius: var(--card-radius);
   transition: border-color 0.2s;
+  padding: var(--sp-6);
 }
 .card:hover { border-color: var(--border2); }
 
-.section-label {
-  font-size:10px; font-weight:600; letter-spacing:1.5px;
-  text-transform:uppercase; color:var(--text3);
-  margin-bottom:14px; display:flex; align-items:center; gap:10px;
+/* ── Card header pattern ──────────────────────────────────── */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--sp-5);
+  gap: var(--sp-4);
 }
+.card-title {
+  font-size: var(--fs-md);
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.1px;
+  margin-bottom: 4px;
+}
+.card-subtitle {
+  font-size: var(--fs-sm);
+  color: var(--text3);
+  line-height: var(--lh-normal);
+}
+
+/* ── Section labels ───────────────────────────────────────── */
+.section-label {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: var(--sp-4);
+  margin-top: var(--sp-8);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.section-label:first-of-type { margin-top: 0; }
 .section-label::after { content:""; flex:1; height:0.5px; background:var(--border); }
 
+/* ── Stat / metric typography ────────────────────────────────*/
+.stat-value {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+.stat-label {
+  font-size: var(--fs-xs);
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 500;
+}
+
+/* ── Pills / badges ───────────────────────────────────────── */
+.pill {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1.4;
+}
+
+/* ── Progress bars ────────────────────────────────────────── */
+.bar-track {
+  height: 5px;
+  background: var(--surface3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.9s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ── Animations ───────────────────────────────────────────── */
 @keyframes spin { to { transform:rotate(360deg); } }
 .spinner {
   width:34px; height:34px; border-radius:50%;
@@ -79,3 +179,15 @@ body {
 button { font-family:var(--font-main); }
 a { color:var(--accent); text-decoration:none; }
 a:hover { text-decoration:underline; }
+
+/* ── Responsive grid helpers ──────────────────────────────── */
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-5); margin-bottom:var(--sp-6); }
+.grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--sp-3); }
+.grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--sp-4); margin-bottom:var(--sp-6); }
+
+@media (max-width: 900px) {
+  .grid-2, .grid-4 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}
