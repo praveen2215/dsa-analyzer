@@ -247,6 +247,47 @@ app.post("/auth/profiles", requireAuth, (req, res) => {
   }
 })
 
+// Firebase Google Auth route
+app.post("/auth/firebase", async (req, res) => {
+  try {
+    const { uid, email, name, avatar } = req.body
+
+    // Only allow Gmail accounts
+    if (!email.endsWith("@gmail.com")) {
+      return res.status(403).json({ error: "Only Gmail accounts are allowed." })
+    }
+
+    // Check if user already exists
+    let user = await userQueries.findByEmail(email)
+
+    if (!user) {
+      // Create new user from Google account
+      const { v4: uuidv4 } = require("uuid")
+      const newUser = {
+        id:        uid,
+        email:     email,
+        username:  email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "_"),
+        password:  null,
+        google_id: uid,
+        avatar:    avatar || null,
+      }
+      await userQueries.create(newUser)
+      user = await userQueries.findByEmail(email)
+    }
+
+    // Log in the user via session
+    const { password, ...safeUser } = user
+    req.login(safeUser, (err) => {
+      if (err) return res.status(500).json({ error: "Login failed." })
+      res.json({ user: safeUser, message: "Signed in with Google!" })
+    })
+
+  } catch (err) {
+    console.error("Firebase auth error:", err)
+    res.status(500).json({ error: "Authentication failed." })
+  }
+})
+
 app.delete("/auth/profiles/:username", requireAuth, async (req, res) => {
   await profileQueries.delete(req.user.id, req.params.username)
   res.json({ message: "Profile removed." })
