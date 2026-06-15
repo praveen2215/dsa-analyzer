@@ -288,6 +288,43 @@ app.post("/auth/firebase", async (req, res) => {
   }
 })
 
+// Google Sign-In via Firebase
+app.post("/auth/firebase", async (req, res) => {
+  try {
+    const { uid, email, name, avatar } = req.body
+
+    if (!email.endsWith("@gmail.com")) {
+      return res.status(403).json({ error: "Only Gmail accounts are allowed." })
+    }
+
+    let user = await userQueries.findByEmail(email)
+
+    if (!user) {
+      const { v4: uuidv4 } = require("uuid")
+      const username = email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "_")
+      const newUser = {
+        id:        uid,
+        email:     email,
+        username:  username,
+        password:  null,
+        google_id: uid,
+        avatar:    avatar || null,
+      }
+      await userQueries.create(newUser)
+      user = await userQueries.findByEmail(email)
+    }
+
+    const { password: _, ...safeUser } = user
+    req.login(safeUser, (err) => {
+      if (err) return res.status(500).json({ error: "Login failed." })
+      res.json({ user: safeUser, message: "Signed in with Google!" })
+    })
+  } catch (err) {
+    console.error("Firebase auth error:", err)
+    res.status(500).json({ error: "Authentication failed." })
+  }
+})
+
 app.delete("/auth/profiles/:username", requireAuth, async (req, res) => {
   await profileQueries.delete(req.user.id, req.params.username)
   res.json({ message: "Profile removed." })
