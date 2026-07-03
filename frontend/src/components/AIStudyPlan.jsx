@@ -12,130 +12,118 @@ const PLAN_DAYS = [
   {day:"Sun",focus:"Mock Interview / Review", icon:"fa-clock-rotate-left"},
 ]
 
-// Large pool — more problems per topic so filtering still leaves options
 const PROBLEMS = {
   "dynamic-programming":[
-    {title:"Climbing Stairs",                    slug:"climbing-stairs",                              diff:"Easy"},
-    {title:"House Robber",                       slug:"house-robber",                                 diff:"Medium"},
-    {title:"Coin Change",                        slug:"coin-change",                                  diff:"Medium"},
-    {title:"Longest Increasing Subsequence",     slug:"longest-increasing-subsequence",               diff:"Medium"},
-    {title:"Unique Paths",                       slug:"unique-paths",                                 diff:"Medium"},
-    {title:"Jump Game",                          slug:"jump-game",                                    diff:"Medium"},
-    {title:"Partition Equal Subset Sum",         slug:"partition-equal-subset-sum",                   diff:"Medium"},
-    {title:"Edit Distance",                      slug:"edit-distance",                                diff:"Hard"},
-    {title:"Burst Balloons",                     slug:"burst-balloons",                               diff:"Hard"},
-    {title:"Regular Expression Matching",        slug:"regular-expression-matching",                  diff:"Hard"},
+    {title:"Climbing Stairs",                   slug:"climbing-stairs",                             diff:"Easy"},
+    {title:"House Robber",                      slug:"house-robber",                                diff:"Medium"},
+    {title:"Coin Change",                       slug:"coin-change",                                 diff:"Medium"},
+    {title:"Longest Increasing Subsequence",    slug:"longest-increasing-subsequence",              diff:"Medium"},
+    {title:"Unique Paths",                      slug:"unique-paths",                                diff:"Medium"},
+    {title:"Jump Game",                         slug:"jump-game",                                   diff:"Medium"},
+    {title:"Partition Equal Subset Sum",        slug:"partition-equal-subset-sum",                  diff:"Medium"},
+    {title:"Edit Distance",                     slug:"edit-distance",                               diff:"Hard"},
+    {title:"Burst Balloons",                    slug:"burst-balloons",                              diff:"Hard"},
+    {title:"Regular Expression Matching",       slug:"regular-expression-matching",                 diff:"Hard"},
   ],
   "graph":[
-    {title:"Number of Islands",                  slug:"number-of-islands",                            diff:"Medium"},
-    {title:"Clone Graph",                        slug:"clone-graph",                                  diff:"Medium"},
-    {title:"Course Schedule",                    slug:"course-schedule",                              diff:"Medium"},
-    {title:"Pacific Atlantic Water Flow",        slug:"pacific-atlantic-water-flow",                  diff:"Medium"},
-    {title:"Rotting Oranges",                    slug:"rotting-oranges",                              diff:"Medium"},
-    {title:"Word Ladder",                        slug:"word-ladder",                                  diff:"Hard"},
-    {title:"Alien Dictionary",                   slug:"alien-dictionary",                             diff:"Hard"},
+    {title:"Number of Islands",                 slug:"number-of-islands",                           diff:"Medium"},
+    {title:"Clone Graph",                       slug:"clone-graph",                                 diff:"Medium"},
+    {title:"Course Schedule",                   slug:"course-schedule",                             diff:"Medium"},
+    {title:"Pacific Atlantic Water Flow",       slug:"pacific-atlantic-water-flow",                 diff:"Medium"},
+    {title:"Rotting Oranges",                   slug:"rotting-oranges",                             diff:"Medium"},
+    {title:"Word Ladder",                       slug:"word-ladder",                                 diff:"Hard"},
+    {title:"Alien Dictionary",                  slug:"alien-dictionary",                            diff:"Hard"},
   ],
   "tree":[
-    {title:"Maximum Depth of Binary Tree",       slug:"maximum-depth-of-binary-tree",                 diff:"Easy"},
-    {title:"Invert Binary Tree",                 slug:"invert-binary-tree",                           diff:"Easy"},
-    {title:"Diameter of Binary Tree",            slug:"diameter-of-binary-tree",                      diff:"Easy"},
-    {title:"Validate Binary Search Tree",        slug:"validate-binary-search-tree",                  diff:"Medium"},
-    {title:"LCA of Binary Tree",                 slug:"lowest-common-ancestor-of-a-binary-tree",      diff:"Medium"},
-    {title:"Level Order Traversal",              slug:"binary-tree-level-order-traversal",            diff:"Medium"},
-    {title:"Binary Tree Max Path Sum",           slug:"binary-tree-maximum-path-sum",                 diff:"Hard"},
-    {title:"Serialize and Deserialize Tree",     slug:"serialize-and-deserialize-binary-tree",        diff:"Hard"},
+    {title:"Maximum Depth of Binary Tree",      slug:"maximum-depth-of-binary-tree",                diff:"Easy"},
+    {title:"Invert Binary Tree",                slug:"invert-binary-tree",                          diff:"Easy"},
+    {title:"Diameter of Binary Tree",           slug:"diameter-of-binary-tree",                     diff:"Easy"},
+    {title:"Validate Binary Search Tree",       slug:"validate-binary-search-tree",                 diff:"Medium"},
+    {title:"LCA of Binary Tree",                slug:"lowest-common-ancestor-of-a-binary-tree",     diff:"Medium"},
+    {title:"Level Order Traversal",             slug:"binary-tree-level-order-traversal",           diff:"Medium"},
+    {title:"Binary Tree Max Path Sum",          slug:"binary-tree-maximum-path-sum",                diff:"Hard"},
+    {title:"Serialize and Deserialize Tree",    slug:"serialize-and-deserialize-binary-tree",       diff:"Hard"},
   ],
   "binary-search":[
-    {title:"Binary Search",                      slug:"binary-search",                                diff:"Easy"},
-    {title:"Find Minimum in Rotated Array",      slug:"find-minimum-in-rotated-sorted-array",         diff:"Medium"},
-    {title:"Search in Rotated Array",            slug:"search-in-rotated-sorted-array",               diff:"Medium"},
-    {title:"Koko Eating Bananas",                slug:"koko-eating-bananas",                          diff:"Medium"},
-    {title:"Time Based Key-Value Store",         slug:"time-based-key-value-store",                   diff:"Medium"},
-    {title:"Median of Two Sorted Arrays",        slug:"median-of-two-sorted-arrays",                  diff:"Hard"},
+    {title:"Binary Search",                     slug:"binary-search",                               diff:"Easy"},
+    {title:"Find Minimum in Rotated Array",     slug:"find-minimum-in-rotated-sorted-array",        diff:"Medium"},
+    {title:"Search in Rotated Array",           slug:"search-in-rotated-sorted-array",              diff:"Medium"},
+    {title:"Koko Eating Bananas",               slug:"koko-eating-bananas",                         diff:"Medium"},
+    {title:"Median of Two Sorted Arrays",       slug:"median-of-two-sorted-arrays",                 diff:"Hard"},
   ],
   "bit-manipulation":[
-    {title:"Single Number",                      slug:"single-number",                                diff:"Easy"},
-    {title:"Number of 1 Bits",                   slug:"number-of-1-bits",                             diff:"Easy"},
-    {title:"Counting Bits",                      slug:"counting-bits",                                diff:"Easy"},
-    {title:"Reverse Bits",                       slug:"reverse-bits",                                 diff:"Easy"},
-    {title:"Missing Number",                     slug:"missing-number",                               diff:"Easy"},
-    {title:"Sum of Two Integers",                slug:"sum-of-two-integers",                          diff:"Medium"},
-    {title:"Reverse Integer",                    slug:"reverse-integer",                              diff:"Medium"},
+    {title:"Single Number",                     slug:"single-number",                               diff:"Easy"},
+    {title:"Number of 1 Bits",                  slug:"number-of-1-bits",                            diff:"Easy"},
+    {title:"Counting Bits",                     slug:"counting-bits",                               diff:"Easy"},
+    {title:"Missing Number",                    slug:"missing-number",                              diff:"Easy"},
+    {title:"Sum of Two Integers",               slug:"sum-of-two-integers",                         diff:"Medium"},
   ],
   "heap-priority-queue":[
-    {title:"Kth Largest Element",                slug:"kth-largest-element-in-an-array",              diff:"Medium"},
-    {title:"Top K Frequent Elements",            slug:"top-k-frequent-elements",                      diff:"Medium"},
-    {title:"Task Scheduler",                     slug:"task-scheduler",                               diff:"Medium"},
-    {title:"Design Twitter",                     slug:"design-twitter",                               diff:"Medium"},
-    {title:"Find Median from Data Stream",       slug:"find-median-from-data-stream",                 diff:"Hard"},
-    {title:"Merge K Sorted Lists",               slug:"merge-k-sorted-lists",                         diff:"Hard"},
+    {title:"Kth Largest Element",               slug:"kth-largest-element-in-an-array",             diff:"Medium"},
+    {title:"Top K Frequent Elements",           slug:"top-k-frequent-elements",                     diff:"Medium"},
+    {title:"Task Scheduler",                    slug:"task-scheduler",                              diff:"Medium"},
+    {title:"Find Median from Data Stream",      slug:"find-median-from-data-stream",                diff:"Hard"},
+    {title:"Merge K Sorted Lists",              slug:"merge-k-sorted-lists",                        diff:"Hard"},
   ],
   "backtracking":[
-    {title:"Subsets",                            slug:"subsets",                                      diff:"Medium"},
-    {title:"Permutations",                       slug:"permutations",                                 diff:"Medium"},
-    {title:"Combination Sum",                    slug:"combination-sum",                              diff:"Medium"},
-    {title:"Word Search",                        slug:"word-search",                                  diff:"Medium"},
-    {title:"Palindrome Partitioning",            slug:"palindrome-partitioning",                      diff:"Medium"},
-    {title:"Letter Combinations of Phone Number",slug:"letter-combinations-of-a-phone-number",        diff:"Medium"},
-    {title:"N-Queens",                           slug:"n-queens",                                     diff:"Hard"},
-    {title:"Sudoku Solver",                      slug:"sudoku-solver",                                diff:"Hard"},
+    {title:"Subsets",                           slug:"subsets",                                     diff:"Medium"},
+    {title:"Permutations",                      slug:"permutations",                                diff:"Medium"},
+    {title:"Combination Sum",                   slug:"combination-sum",                             diff:"Medium"},
+    {title:"Word Search",                       slug:"word-search",                                 diff:"Medium"},
+    {title:"Palindrome Partitioning",           slug:"palindrome-partitioning",                     diff:"Medium"},
+    {title:"N-Queens",                          slug:"n-queens",                                    diff:"Hard"},
+    {title:"Sudoku Solver",                     slug:"sudoku-solver",                               diff:"Hard"},
   ],
   "sliding-window":[
-    {title:"Best Time to Buy Stock II",          slug:"best-time-to-buy-and-sell-stock-ii",           diff:"Medium"},
-    {title:"Longest Repeating Character Replace",slug:"longest-repeating-character-replacement",      diff:"Medium"},
-    {title:"Permutation in String",              slug:"permutation-in-string",                        diff:"Medium"},
-    {title:"Max Consecutive Ones III",           slug:"max-consecutive-ones-iii",                     diff:"Medium"},
-    {title:"Minimum Window Substring",           slug:"minimum-window-substring",                     diff:"Hard"},
-    {title:"Sliding Window Maximum",             slug:"sliding-window-maximum",                       diff:"Hard"},
+    {title:"Longest Repeating Character Replace",slug:"longest-repeating-character-replacement",    diff:"Medium"},
+    {title:"Permutation in String",             slug:"permutation-in-string",                       diff:"Medium"},
+    {title:"Max Consecutive Ones III",          slug:"max-consecutive-ones-iii",                    diff:"Medium"},
+    {title:"Minimum Window Substring",          slug:"minimum-window-substring",                    diff:"Hard"},
+    {title:"Sliding Window Maximum",            slug:"sliding-window-maximum",                      diff:"Hard"},
   ],
   "trie":[
-    {title:"Implement Trie",                     slug:"implement-trie-prefix-tree",                   diff:"Medium"},
-    {title:"Design Add and Search Words",        slug:"design-add-and-search-words-data-structure",   diff:"Medium"},
-    {title:"Word Search II",                     slug:"word-search-ii",                               diff:"Hard"},
+    {title:"Implement Trie",                    slug:"implement-trie-prefix-tree",                  diff:"Medium"},
+    {title:"Design Add and Search Words",       slug:"design-add-and-search-words-data-structure",  diff:"Medium"},
+    {title:"Word Search II",                    slug:"word-search-ii",                              diff:"Hard"},
   ],
   "two-pointers":[
-    {title:"Valid Palindrome",                   slug:"valid-palindrome",                             diff:"Easy"},
-    {title:"Two Sum II",                         slug:"two-sum-ii-input-array-is-sorted",             diff:"Medium"},
-    {title:"3Sum",                               slug:"3sum",                                         diff:"Medium"},
-    {title:"Container With Most Water",          slug:"container-with-most-water",                    diff:"Medium"},
-    {title:"Trapping Rain Water",                slug:"trapping-rain-water",                          diff:"Hard"},
+    {title:"Valid Palindrome",                  slug:"valid-palindrome",                            diff:"Easy"},
+    {title:"Two Sum II",                        slug:"two-sum-ii-input-array-is-sorted",            diff:"Medium"},
+    {title:"3Sum",                              slug:"3sum",                                        diff:"Medium"},
+    {title:"Container With Most Water",         slug:"container-with-most-water",                   diff:"Medium"},
+    {title:"Trapping Rain Water",               slug:"trapping-rain-water",                         diff:"Hard"},
   ],
   "stack":[
-    {title:"Valid Parentheses",                  slug:"valid-parentheses",                            diff:"Easy"},
-    {title:"Min Stack",                          slug:"min-stack",                                    diff:"Medium"},
-    {title:"Evaluate Reverse Polish Notation",   slug:"evaluate-reverse-polish-notation",             diff:"Medium"},
-    {title:"Daily Temperatures",                 slug:"daily-temperatures",                           diff:"Medium"},
-    {title:"Car Fleet",                          slug:"car-fleet",                                    diff:"Medium"},
-    {title:"Largest Rectangle in Histogram",     slug:"largest-rectangle-in-histogram",               diff:"Hard"},
+    {title:"Valid Parentheses",                 slug:"valid-parentheses",                           diff:"Easy"},
+    {title:"Min Stack",                         slug:"min-stack",                                   diff:"Medium"},
+    {title:"Daily Temperatures",                slug:"daily-temperatures",                          diff:"Medium"},
+    {title:"Car Fleet",                         slug:"car-fleet",                                   diff:"Medium"},
+    {title:"Largest Rectangle in Histogram",    slug:"largest-rectangle-in-histogram",              diff:"Hard"},
   ],
   "array":[
-    {title:"Contains Duplicate",                 slug:"contains-duplicate",                           diff:"Easy"},
-    {title:"Best Time to Buy and Sell Stock",    slug:"best-time-to-buy-and-sell-stock",              diff:"Easy"},
-    {title:"Two Sum",                            slug:"two-sum",                                      diff:"Easy"},
-    {title:"Product of Array Except Self",       slug:"product-of-array-except-self",                 diff:"Medium"},
-    {title:"Maximum Subarray",                   slug:"maximum-subarray",                             diff:"Medium"},
-    {title:"3Sum",                               slug:"3sum",                                         diff:"Medium"},
-    {title:"Trapping Rain Water",                slug:"trapping-rain-water",                          diff:"Hard"},
-    {title:"First Missing Positive",             slug:"first-missing-positive",                       diff:"Hard"},
+    {title:"Contains Duplicate",                slug:"contains-duplicate",                          diff:"Easy"},
+    {title:"Best Time to Buy and Sell Stock",   slug:"best-time-to-buy-and-sell-stock",             diff:"Easy"},
+    {title:"Product of Array Except Self",      slug:"product-of-array-except-self",                diff:"Medium"},
+    {title:"Maximum Subarray",                  slug:"maximum-subarray",                            diff:"Medium"},
+    {title:"3Sum",                              slug:"3sum",                                        diff:"Medium"},
+    {title:"Trapping Rain Water",               slug:"trapping-rain-water",                         diff:"Hard"},
+    {title:"First Missing Positive",            slug:"first-missing-positive",                      diff:"Hard"},
   ],
   "linked-list":[
-    {title:"Reverse Linked List",                slug:"reverse-linked-list",                          diff:"Easy"},
-    {title:"Merge Two Sorted Lists",             slug:"merge-two-sorted-lists",                       diff:"Easy"},
-    {title:"Linked List Cycle",                  slug:"linked-list-cycle",                            diff:"Easy"},
-    {title:"Reorder List",                       slug:"reorder-list",                                 diff:"Medium"},
-    {title:"Remove Nth Node From End",           slug:"remove-nth-node-from-end-of-list",             diff:"Medium"},
-    {title:"Copy List with Random Pointer",      slug:"copy-list-with-random-pointer",                diff:"Medium"},
-    {title:"LRU Cache",                          slug:"lru-cache",                                    diff:"Hard"},
-    {title:"Merge K Sorted Lists",               slug:"merge-k-sorted-lists",                         diff:"Hard"},
+    {title:"Reverse Linked List",               slug:"reverse-linked-list",                         diff:"Easy"},
+    {title:"Merge Two Sorted Lists",            slug:"merge-two-sorted-lists",                      diff:"Easy"},
+    {title:"Linked List Cycle",                 slug:"linked-list-cycle",                           diff:"Easy"},
+    {title:"Reorder List",                      slug:"reorder-list",                                diff:"Medium"},
+    {title:"Remove Nth Node From End",          slug:"remove-nth-node-from-end-of-list",            diff:"Medium"},
+    {title:"LRU Cache",                         slug:"lru-cache",                                   diff:"Hard"},
   ],
   "hash-table":[
-    {title:"Two Sum",                            slug:"two-sum",                                      diff:"Easy"},
-    {title:"Valid Anagram",                      slug:"valid-anagram",                                diff:"Easy"},
-    {title:"Group Anagrams",                     slug:"group-anagrams",                               diff:"Medium"},
-    {title:"Top K Frequent Elements",            slug:"top-k-frequent-elements",                      diff:"Medium"},
-    {title:"Longest Consecutive Sequence",       slug:"longest-consecutive-sequence",                 diff:"Medium"},
-    {title:"Insert Delete GetRandom",            slug:"insert-delete-getrandom-o1",                   diff:"Medium"},
-    {title:"LRU Cache",                          slug:"lru-cache",                                    diff:"Hard"},
+    {title:"Two Sum",                           slug:"two-sum",                                     diff:"Easy"},
+    {title:"Valid Anagram",                     slug:"valid-anagram",                               diff:"Easy"},
+    {title:"Group Anagrams",                    slug:"group-anagrams",                              diff:"Medium"},
+    {title:"Top K Frequent Elements",           slug:"top-k-frequent-elements",                     diff:"Medium"},
+    {title:"Longest Consecutive Sequence",      slug:"longest-consecutive-sequence",                diff:"Medium"},
+    {title:"LRU Cache",                         slug:"lru-cache",                                   diff:"Hard"},
   ],
 }
 
@@ -163,50 +151,43 @@ export default function AIStudyPlan({ data, recent }) {
     return { ...t, pct, total }
   }).sort((a, b) => a.pct - b.pct).slice(0, 6), [allTags])
 
-  // Build a set of already-solved slugs from recent submissions
+  // Use real recent submission slugs to filter out already-solved problems
   const solvedSlugs = useMemo(() => {
-    const recentSlugs = new Set(
-      (recent?.submissions || []).map(s => s.slug)
-    )
-    return recentSlugs
+    const slugs = new Set((recent?.submissions || []).map(s => s.slug))
+    return slugs
   }, [recent])
 
-  // For each weak topic, get unsolved problems only
-  // We determine "likely solved" by cross-referencing solved count vs total pool
   const nextProblems = useMemo(() => {
     const results = []
     for (const t of weakTopics.slice(0, 4)) {
       const pool = PROBLEMS[t.tagSlug] || []
       if (!pool.length) continue
 
-      // Sort by difficulty — recommend easier ones first for weak topics
       const sorted = [...pool].sort((a, b) => {
         const order = { Easy:0, Medium:1, Hard:2 }
         return order[a.diff] - order[b.diff]
       })
 
-      // Filter out problems already in recent solved slugs
+      // Remove problems solved recently
       const unsolved = sorted.filter(p => !solvedSlugs.has(p.slug))
 
-      // If user has solved a high % of this topic, push harder problems
+      // For high mastery topics push harder problems
       const recommended = t.pct >= 60
         ? unsolved.filter(p => p.diff !== "Easy").slice(0, 2)
         : unsolved.slice(0, 2)
 
-      // Fallback to any unsolved if filter is too aggressive
       const final = recommended.length ? recommended : unsolved.slice(0, 2)
-
-      final.forEach(p => results.push({ ...p, topic: t.tagName, topicSlug: t.tagSlug, mastery: t.pct }))
+      final.forEach(p => results.push({ ...p, topic:t.tagName, topicSlug:t.tagSlug, mastery:t.pct }))
     }
     return results.slice(0, 8)
   }, [weakTopics, solvedSlugs])
 
   return (
     <div className="card" style={{ padding:"22px 24px", marginBottom:24 }}>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
+      <div className="card-header">
         <div>
-          <div style={{ fontSize:14, fontWeight:500 }}>AI study plan</div>
-          <div style={{ fontSize:12, color:"var(--text3)", marginTop:3 }}>Personalized recommendations based on your weak areas</div>
+          <div className="card-title">AI study plan</div>
+          <div className="card-subtitle">Personalized recommendations based on your weak areas</div>
         </div>
         <div style={{ display:"flex", gap:4 }}>
           {[["weakTopics","Weak Topics"],["weeklyPlan","Weekly Plan"],["nextProblems","Next Problems"]].map(([key,label]) => (
@@ -270,7 +251,8 @@ export default function AIStudyPlan({ data, recent }) {
       {tab === "nextProblems" && (
         <div>
           <div style={{ fontSize:12, color:"var(--text3)", marginBottom:12 }}>
-            Unsolved problems from your weakest topics · easier first for low mastery · harder first above 60%
+            Problems from your weakest topics · easier first for low mastery · harder first above 60%
+            {recent?.submissions?.length > 0 && <span style={{ color:"#3B6D11", marginLeft:6 }}>· Recently solved problems filtered out</span>}
           </div>
           {nextProblems.length === 0 ? (
             <div style={{ textAlign:"center", padding:"24px", color:"var(--text3)", fontSize:13 }}>

@@ -51,14 +51,14 @@ export default function Dashboard({ data, recent, onAnalyze, shareUrl }) {
       </div>
 
       <div className="section-label">AI Study Plan</div>
-      <AIStudyPlan data={data} />
+      <AIStudyPlan data={data} recent={recent} />
 
       <div className="section-label">Topic Mastery</div>
       <TopicHeatmap topics={data.topics} solved={data.solved} />
 
       <div className="section-label">Language & Goals</div>
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20, marginBottom:24 }}>
-        <LanguageBreakdown languages={data.languages} />
+        <LanguageBreakdown languages={data.languages} recent={recent} />
         <GoalTracker data={data} />
       </div>
 

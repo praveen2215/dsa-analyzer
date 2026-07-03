@@ -1,12 +1,5 @@
 import React, { useMemo } from "react"
 
-const WEIGHTS = {
-  totalSolved:   { weight:30, max:500,  label:"Problem Volume"  },
-  hardSolved:    { weight:30, max:150,  label:"Hard Problems"   },
-  topicCoverage: { weight:25, max:15,   label:"Topic Coverage"  },
-  streak:        { weight:15, max:100,  label:"Consistency"     },
-}
-
 const TIERS = [
   { name:"FAANG+",  min:88, color:"#3B6D11", bg:"rgba(59,109,17,0.1)",   desc:"Google, Meta, Apple, Amazon" },
   { name:"Tier 1",  min:72, color:"#185FA5", bg:"rgba(24,95,165,0.1)",   desc:"Microsoft, Uber, Airbnb"     },
@@ -16,7 +9,6 @@ const TIERS = [
 ]
 
 const COLORS = ["#3B6D11","#185FA5","#BA7517","#7F77DD"]
-const LABELS = ["Problem Volume","Hard Problems","Topic Coverage","Consistency"]
 
 function RadialGauge({ score, color }) {
   const r=74, sw=10, norm=r-sw/2, circ=2*Math.PI*norm
@@ -42,36 +34,48 @@ function RadialGauge({ score, color }) {
 export default function InterviewReadiness({ data }) {
   const { solved, calendar, topics } = data
 
-  const scores = useMemo(() => {
+  const breakdown = useMemo(() => {
     const topicCount = [
       ...(topics?.fundamental   || []),
       ...(topics?.intermediate  || []),
       ...(topics?.advanced      || []),
     ].filter(t => t.problemsSolved >= 5).length
 
-    return {
-      totalSolved:   Math.min(solved.total,        WEIGHTS.totalSolved.max),
-      hardSolved:    Math.min(solved.hard,          WEIGHTS.hardSolved.max),
-      topicCoverage: Math.min(topicCount,           WEIGHTS.topicCoverage.max),
-      streak:        Math.min(calendar.streak || 0, WEIGHTS.streak.max),
-    }
+    // Factor 1: Problem Volume (30pts) — max at 500 problems
+    const volScore = Math.min(30, Math.round((solved.total / 500) * 30))
+
+    // Factor 2: Hard Problems (30pts) — max at 150 hard
+    const hardScore = Math.min(30, Math.round((solved.hard / 150) * 30))
+
+    // Factor 3: Topic Coverage (25pts) — max at 15 topics with 5+ problems
+    const topicScore = Math.min(25, Math.round((topicCount / 15) * 25))
+
+    // Factor 4: Consistency (15pts) — streak max at 100 days
+    const streak = calendar.streak || 0
+    const streakScore = Math.min(15, Math.round((Math.min(streak, 100) / 100) * 15))
+
+    return [
+      { key:"totalSolved",   label:"Problem Volume",  weight:30, earned:volScore,    color:COLORS[0], icon:"fa-layer-group", desc:"Based on total problems solved · Max at 500" },
+      { key:"hardSolved",    label:"Hard Problems",   weight:30, earned:hardScore,   color:COLORS[1], icon:"fa-fire",        desc:"Hard problems solved · Max at 150"           },
+      { key:"topicCoverage", label:"Topic Coverage",  weight:25, earned:topicScore,  color:COLORS[2], icon:"fa-brain",       desc:"Topics with 5+ problems solved · Max at 15"  },
+      { key:"streak",        label:"Consistency",     weight:15, earned:streakScore, color:COLORS[3], icon:"fa-calendar",    desc:"Current streak in days · Max at 100"         },
+    ]
   }, [solved, calendar, topics])
 
-  const breakdown = useMemo(() => Object.entries(WEIGHTS).map(([key, cfg], i) => ({
-    key, label: LABELS[i], weight: cfg.weight,
-    earned: (scores[key] / cfg.max) * cfg.weight,
-    color:  COLORS[i],
-  })), [scores])
+  const total    = Math.round(breakdown.reduce((s,b) => s + b.earned, 0))
+  const tier     = TIERS.find(t => total >= t.min) || TIERS[TIERS.length-1]
+  const nextTier = TIERS[TIERS.indexOf(tier) - 1]
 
-  const total   = Math.round(breakdown.reduce((s,b) => s + b.earned, 0))
-  const tier    = TIERS.find(t => total >= t.min) || TIERS[TIERS.length-1]
-  const nextTier= TIERS[TIERS.indexOf(tier) - 1]
+  // What to improve next — find biggest gap
+  const biggestGap = [...breakdown].sort((a,b) => (b.weight - b.earned) - (a.weight - a.earned))[0]
 
   return (
     <div className="card" style={{ padding:"22px 24px", marginBottom:24 }}>
-      <div style={{ fontSize:14, fontWeight:500, marginBottom:3 }}>Interview readiness score</div>
-      <div style={{ fontSize:12, color:"var(--text3)", marginBottom:20 }}>
-        Based on problem volume, hard problems, topic coverage and consistency.
+      <div className="card-header">
+        <div>
+          <div className="card-title">Interview readiness score</div>
+          <div className="card-subtitle">Based on problem volume, hard problems, topic coverage and consistency</div>
+        </div>
       </div>
 
       <div style={{ display:"grid", gridTemplateColumns:"200px 1fr", gap:32, alignItems:"start" }}>
@@ -85,47 +89,64 @@ export default function InterviewReadiness({ data }) {
             </div>
             <div style={{ fontSize:11, color:"var(--text3)", marginTop:6 }}>{tier.desc}</div>
           </div>
+
           {nextTier && (
             <div style={{ marginTop:12, padding:"10px 14px", background:"var(--surface2)", borderRadius:8, fontSize:11, color:"var(--text3)", textAlign:"center", border:"0.5px solid var(--border)" }}>
               <span style={{ color:nextTier.color, fontWeight:600 }}>{nextTier.min - total} pts</span> to reach <strong style={{ color:"var(--text2)" }}>{nextTier.name}</strong>
             </div>
           )}
+
+          {/* Real numbers */}
+          <div style={{ marginTop:12, padding:"10px 14px", background:"var(--surface2)", borderRadius:8, border:"0.5px solid var(--border)", fontSize:11 }}>
+            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+              {[
+                { label:"Problems solved",  val:solved.total,  color:"#3B6D11" },
+                { label:"Hard problems",    val:solved.hard,   color:"#185FA5" },
+                { label:"Active streak",    val:(calendar.streak||0)+"d", color:"#BA7517" },
+              ].map(({ label, val, color }) => (
+                <div key={label} style={{ display:"flex", justifyContent:"space-between" }}>
+                  <span style={{ color:"var(--text3)" }}>{label}</span>
+                  <span style={{ fontFamily:"var(--font-mono)", fontWeight:600, color }}>{val}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Breakdown */}
-        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+        <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
 
           {breakdown.map(b => (
             <div key={b.key}>
-              <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, color:"var(--text3)", marginBottom:4 }}>
-                <span>{b.label} <span style={{ opacity:0.6 }}>({b.weight}pts max)</span></span>
-                <span style={{ fontFamily:"var(--font-mono)", color:"var(--text2)" }}>
-                  {Math.round(b.earned)}/{b.weight}
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+                  <i className={"fa-solid "+b.icon} style={{ color:b.color, fontSize:12 }} />
+                  <span style={{ fontSize:12, color:"var(--text2)" }}>{b.label}</span>
+                  <span style={{ fontSize:10, color:"var(--text3)" }}>({b.weight}pts max)</span>
+                </div>
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:12, fontWeight:600, color:b.color }}>
+                  {b.earned}/{b.weight}
                 </span>
               </div>
-              <div style={{ height:6, background:"var(--surface3)", borderRadius:3 }}>
+              <div style={{ height:7, background:"var(--surface3)", borderRadius:3 }}>
                 <div style={{ height:"100%", background:b.color, borderRadius:3, width:Math.round((b.earned/b.weight)*100)+"%", transition:"width 1s ease" }} />
               </div>
+              <div style={{ fontSize:10, color:"var(--text3)", marginTop:3 }}>{b.desc}</div>
             </div>
           ))}
 
-          {/* What each factor means */}
-          <div style={{ marginTop:4, padding:"12px 14px", background:"var(--surface2)", borderRadius:8, border:"0.5px solid var(--border)" }}>
-            <div style={{ fontSize:11, color:"var(--text3)", marginBottom:8, fontWeight:500 }}>How it is calculated</div>
-            {[
-              { label:"Problem Volume (30pts)", desc:"Based on total problems solved · Max at 500",       color:"#3B6D11" },
-              { label:"Hard Problems (30pts)",  desc:"Hard problems solved · Max at 150",                 color:"#185FA5" },
-              { label:"Topic Coverage (25pts)", desc:"Number of topics with 5+ problems solved · Max 15", color:"#BA7517" },
-              { label:"Consistency (15pts)",    desc:"Current streak in days · Max at 100",               color:"#7F77DD" },
-            ].map(({ label, desc, color }) => (
-              <div key={label} style={{ display:"flex", alignItems:"flex-start", gap:8, marginBottom:6 }}>
-                <div style={{ width:8, height:8, borderRadius:2, background:color, flexShrink:0, marginTop:3 }} />
-                <div>
-                  <div style={{ fontSize:11, fontWeight:500, color:"var(--text2)" }}>{label}</div>
-                  <div style={{ fontSize:10, color:"var(--text3)" }}>{desc}</div>
-                </div>
-              </div>
-            ))}
+          {/* Next step tip */}
+          <div style={{ padding:"12px 14px", background:"rgba(24,95,165,0.06)", border:"0.5px solid rgba(24,95,165,0.15)", borderRadius:8, marginTop:4 }}>
+            <div style={{ fontSize:11, fontWeight:600, color:"#185FA5", marginBottom:4 }}>
+              <i className="fa-solid fa-lightbulb" style={{ marginRight:5 }} />
+              Focus area to improve score
+            </div>
+            <div style={{ fontSize:12, color:"var(--text2)" }}>
+              {biggestGap.key === "totalSolved" && `Solve ${Math.max(0, 500 - solved.total)} more problems to max out Problem Volume`}
+              {biggestGap.key === "hardSolved"  && `Solve ${Math.max(0, 150 - solved.hard)} more Hard problems to max out Hard Problems`}
+              {biggestGap.key === "topicCoverage" && `Solve 5+ problems in more topics to improve Topic Coverage`}
+              {biggestGap.key === "streak" && `Build a ${Math.max(0, 100 - (calendar.streak||0))} day streak to max Consistency`}
+            </div>
           </div>
 
           {/* Tier thresholds */}
@@ -133,7 +154,9 @@ export default function InterviewReadiness({ data }) {
             <div style={{ fontSize:11, color:"var(--text3)", marginBottom:8 }}>Company tier thresholds</div>
             <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
               {TIERS.map(t => (
-                <div key={t.name} style={{ display:"flex", alignItems:"center", gap:10, padding:"5px 10px", borderRadius:6, background:t===tier ? t.bg : "transparent", border:"0.5px solid "+(t===tier ? t.color+"33" : "transparent") }}>
+                <div key={t.name} style={{ display:"flex", alignItems:"center", gap:10, padding:"5px 10px", borderRadius:6,
+                  background: t===tier ? t.bg : "transparent",
+                  border:"0.5px solid "+(t===tier ? t.color+"33" : "transparent") }}>
                   <span style={{ width:7, height:7, borderRadius:"50%", background:t.color, flexShrink:0 }} />
                   <span style={{ fontSize:12, fontWeight:t===tier ? 600 : 400, color:t===tier ? t.color : "var(--text3)", flex:1 }}>{t.name}</span>
                   <span style={{ fontSize:11, color:"var(--text3)", fontFamily:"var(--font-mono)" }}>{t.min}+</span>
