@@ -3,38 +3,38 @@ import React, { useMemo, useState } from "react"
 // Realistic TARGET (not total available) — capped based on what a strong candidate needs
 // Topics with 1000s of problems are capped at what actually matters for interviews
 const TARGET_TOTALS = {
-  "array":              200,  // 1600 exist but 200 covers all patterns
-  "dynamic-programming": 100, // 590 exist but 100 covers all DP patterns thoroughly
-  "string":             120,  // 590 exist but 120 covers all string patterns
-  "math":                80,  // 560 exist but math is secondary
-  "tree":               100,  // 360 exist but 100 covers all tree patterns
-  "depth-first-search": 100,  // 420 exist but 100 is enough
-  "greedy":              80,  // 410 exist
-  "binary-search":       60,  // 280 exist but 60 covers all binary search patterns
-  "breadth-first-search": 60, // 270 exist but 60 covers all BFS patterns
-  "graph":               80,  // 290 exist but 80 covers all graph patterns
-  "sorting":             60,  // 370 exist but sorting is simpler
-  "hash-table":         100,  // 590 exist but 100 covers all hash patterns
-  "two-pointers":        60,  // 230 exist but 60 covers all two pointer patterns
-  "bit-manipulation":    40,  // 170 exist but bit manip is specialized
-  "stack":               60,  // 290 exist
-  "heap-priority-queue": 60,  // 240 exist
-  "backtracking":        60,  // 210 exist
-  "sliding-window":      50,  // 200 exist
-  "linked-list":         60,  // 175 exist
+  "array":              150,  // 1600 exist but 200 covers all patterns
+  "dynamic-programming": 50, // 590 exist but 100 covers all DP patterns thoroughly
+  "string":             80,  // 590 exist but 120 covers all string patterns
+  "math":                50,  // 560 exist but math is secondary
+  "tree":               50,  // 360 exist but 100 covers all tree patterns
+  "depth-first-search": 40,  // 420 exist but 100 is enough
+  "greedy":              60,  // 410 exist
+  "binary-search":       40,  // 280 exist but 60 covers all binary search patterns
+  "breadth-first-search": 40, // 270 exist but 60 covers all BFS patterns
+  "graph":               40,  // 290 exist but 80 covers all graph patterns
+  "sorting":             50,  // 370 exist but sorting is simpler
+  "hash-table":         70,  // 590 exist but 100 covers all hash patterns
+  "two-pointers":        50,  // 230 exist but 60 covers all two pointer patterns
+  "bit-manipulation":    30,  // 170 exist but bit manip is specialized
+  "stack":               40,  // 290 exist
+  "heap-priority-queue": 30,  // 240 exist
+  "backtracking":        40,  // 210 exist
+  "sliding-window":      40,  // 200 exist
+  "linked-list":         50,  // 175 exist
   "trie":                30,  // 90 exist — small topic
   "matrix":              50,  // 210 exist
-  "simulation":          40,  // 330 exist but low interview weight
-  "design":              40,  // 230 exist
+  "simulation":          30,  // 330 exist but low interview weight
+  "design":              30,  // 230 exist
   "recursion":           40,  // 100 exist
   "divide-and-conquer":  30,  // 100 exist
-  "union-find":          30,  // 80 exist — niche
+  "union-find":          20,  // 80 exist — niche
   "monotonic-stack":     30,  // 110 exist
   "prefix-sum":          40,  // 200 exist
   "segment-tree":        20,  // specialized
   "binary-indexed-tree": 20,  // specialized
   "topological-sort":    20,  // 80 exist
-  "binary-tree":         80,  // important tree subtype
+  "binary-tree":         60,  // important tree subtype
   "binary-search-tree":  40,  // specific BST problems
 }
 
