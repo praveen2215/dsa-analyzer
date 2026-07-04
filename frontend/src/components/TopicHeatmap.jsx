@@ -1,16 +1,44 @@
 import React, { useMemo, useState } from "react"
 
-const KNOWN_TOTALS = {
-  "array":1600,"dynamic-programming":590,"string":590,"math":560,"tree":360,
-  "depth-first-search":420,"greedy":410,"binary-search":280,"breadth-first-search":270,
-  "graph":290,"sorting":370,"hash-table":590,"two-pointers":230,"bit-manipulation":170,
-  "stack":290,"heap-priority-queue":240,"backtracking":210,"sliding-window":200,
-  "linked-list":175,"trie":90,"matrix":210,"simulation":330,"design":230,
-  "recursion":100,"divide-and-conquer":100,"union-find":80,"monotonic-stack":110,
+// Realistic TARGET (not total available) — capped based on what a strong candidate needs
+// Topics with 1000s of problems are capped at what actually matters for interviews
+const TARGET_TOTALS = {
+  "array":              200,  // 1600 exist but 200 covers all patterns
+  "dynamic-programming": 100, // 590 exist but 100 covers all DP patterns thoroughly
+  "string":             120,  // 590 exist but 120 covers all string patterns
+  "math":                80,  // 560 exist but math is secondary
+  "tree":               100,  // 360 exist but 100 covers all tree patterns
+  "depth-first-search": 100,  // 420 exist but 100 is enough
+  "greedy":              80,  // 410 exist
+  "binary-search":       60,  // 280 exist but 60 covers all binary search patterns
+  "breadth-first-search": 60, // 270 exist but 60 covers all BFS patterns
+  "graph":               80,  // 290 exist but 80 covers all graph patterns
+  "sorting":             60,  // 370 exist but sorting is simpler
+  "hash-table":         100,  // 590 exist but 100 covers all hash patterns
+  "two-pointers":        60,  // 230 exist but 60 covers all two pointer patterns
+  "bit-manipulation":    40,  // 170 exist but bit manip is specialized
+  "stack":               60,  // 290 exist
+  "heap-priority-queue": 60,  // 240 exist
+  "backtracking":        60,  // 210 exist
+  "sliding-window":      50,  // 200 exist
+  "linked-list":         60,  // 175 exist
+  "trie":                30,  // 90 exist — small topic
+  "matrix":              50,  // 210 exist
+  "simulation":          40,  // 330 exist but low interview weight
+  "design":              40,  // 230 exist
+  "recursion":           40,  // 100 exist
+  "divide-and-conquer":  30,  // 100 exist
+  "union-find":          30,  // 80 exist — niche
+  "monotonic-stack":     30,  // 110 exist
+  "prefix-sum":          40,  // 200 exist
+  "segment-tree":        20,  // specialized
+  "binary-indexed-tree": 20,  // specialized
+  "topological-sort":    20,  // 80 exist
+  "binary-tree":         80,  // important tree subtype
+  "binary-search-tree":  40,  // specific BST problems
 }
 
-// Approximate % of hard problems per topic (out of total for that topic)
-// Used to reward users who solved more of the harder problems
+// % of Hard problems per topic — used for depth scoring
 const HARD_PCT = {
   "dynamic-programming":0.36,"graph":0.34,"backtracking":0.30,"heap-priority-queue":0.27,
   "binary-search":0.24,"trie":0.27,"bit-manipulation":0.20,"sliding-window":0.22,
@@ -18,40 +46,40 @@ const HARD_PCT = {
   "tree":0.22,"depth-first-search":0.24,"breadth-first-search":0.22,"stack":0.20,
   "two-pointers":0.18,"linked-list":0.18,"array":0.20,"string":0.18,
   "math":0.18,"hash-table":0.16,"sorting":0.15,"greedy":0.20,
-  "matrix":0.20,"simulation":0.15,"recursion":0.18,
+  "matrix":0.20,"simulation":0.15,"recursion":0.18,"prefix-sum":0.15,
+  "binary-tree":0.22,"binary-search-tree":0.20,"topological-sort":0.25,
 }
 
 function computeScore(tag) {
-  const total    = KNOWN_TOTALS[tag.tagSlug] || Math.round(tag.problemsSolved * 2.5)
+  const target   = TARGET_TOTALS[tag.tagSlug] || Math.min(100, Math.round(tag.problemsSolved * 2))
   const solved   = tag.problemsSolved || 0
 
-  // Factor 1: Coverage — how many problems solved out of known total (50%)
-  const coverage = Math.min(100, Math.round((solved / total) * 100))
+  // Factor 1: Coverage — solved vs realistic target (50%)
+  // Once you hit the target, you are at 100% — solving more is fine but not required
+  const coverage = Math.min(100, Math.round((solved / target) * 100))
 
-  // Factor 2: Depth — penalise topics where user solved only Easy problems
-  // We estimate depth from: if coverage is high but they have few total solved, likely stuck at Easy
-  // We reward based on coverage exceeding "easy-only" threshold (~30% of a topic is easy)
-  const easyThresh    = Math.round(total * 0.30)
-  const mediumThresh  = Math.round(total * 0.30 + total * 0.45)
+  // Factor 2: Depth — rewards solving beyond easy-only problems
+  // Easy = ~30% of target, Medium = ~45%, Hard = ~25%
+  const easyThresh   = Math.round(target * 0.30)
+  const mediumThresh = Math.round(target * 0.30 + target * 0.45)
   let depthScore
   if (solved <= easyThresh) {
     depthScore = Math.round((solved / Math.max(1, easyThresh)) * 40)
   } else if (solved <= mediumThresh) {
     depthScore = 40 + Math.round(((solved - easyThresh) / Math.max(1, mediumThresh - easyThresh)) * 40)
   } else {
-    depthScore = 80 + Math.round(((solved - mediumThresh) / Math.max(1, total - mediumThresh)) * 20)
+    depthScore = 80 + Math.round(((solved - mediumThresh) / Math.max(1, target - mediumThresh)) * 20)
   }
   depthScore = Math.min(100, depthScore)
 
-  // Factor 3: Difficulty weight — topics that are inherently harder give more credit
-  // Solving 20% of DP is harder than 20% of Array, so we reward accordingly
-  const hardPct      = HARD_PCT[tag.tagSlug] || 0.20
-  const difficultyBonus = Math.round(hardPct * 100) // e.g. DP=36, Array=20
+  // Factor 3: Topic difficulty bonus — harder topics get extra credit
+  const hardPct         = HARD_PCT[tag.tagSlug] || 0.20
+  const difficultyBonus = Math.round(hardPct * 100)
 
-  // Weighted final score
+  // Weighted final
   const score = Math.round(coverage * 0.50 + depthScore * 0.35 + difficultyBonus * 0.15)
 
-  return { score: Math.min(99, score), coverage, depthScore, difficultyBonus, total }
+  return { score: Math.min(99, score), coverage, depthScore, difficultyBonus, target }
 }
 
 function getMastery(score) {
@@ -77,8 +105,9 @@ function ScoreBar({ label, value, color, note }) {
 
 function TopicCell({ tag }) {
   const [hovered, setHovered] = useState(false)
-  const { score, coverage, depthScore, difficultyBonus, total } = computeScore(tag)
+  const { score, coverage, depthScore, difficultyBonus, target } = computeScore(tag)
   const m = getMastery(score)
+  const maxed = tag.problemsSolved >= target
 
   return (
     <div
@@ -106,17 +135,21 @@ function TopicCell({ tag }) {
         <div style={{ fontSize:"var(--fs-xs)", color:"var(--text3)" }}>/ 100</div>
       </div>
 
-      <div style={{ fontSize:"var(--fs-xs)", fontWeight:600, textTransform:"uppercase", letterSpacing:"0.4px", color:m.color, marginBottom:"var(--sp-2)" }}>
-        {m.label}
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"var(--sp-2)" }}>
+        <div style={{ fontSize:"var(--fs-xs)", fontWeight:600, textTransform:"uppercase", letterSpacing:"0.4px", color:m.color }}>
+          {m.label}
+        </div>
+        {maxed && <span style={{ fontSize:9, color:"#3B6D11", fontWeight:600 }}>✓ TARGET MET</span>}
       </div>
 
       {hovered ? (
         <div style={{ borderTop:"0.5px solid var(--border)", paddingTop:"var(--sp-2)", marginTop:4 }}>
-          <ScoreBar label="Coverage (50%)"         value={coverage}         color="#185FA5" note={tag.problemsSolved+"/"+total} />
-          <ScoreBar label="Depth (35%)"            value={depthScore}       color="#BA7517" />
-          <ScoreBar label="Topic difficulty (15%)" value={difficultyBonus}  color="#7F77DD" note={(HARD_PCT[tag.tagSlug]||0.20)*100+"%h"} />
+          <ScoreBar label="Coverage (50%)"         value={coverage}        color="#185FA5" note={tag.problemsSolved+"/"+target+" target"} />
+          <ScoreBar label="Depth (35%)"            value={depthScore}      color="#BA7517" />
+          <ScoreBar label="Topic difficulty (15%)" value={difficultyBonus} color="#7F77DD" />
           <div style={{ marginTop:6, fontSize:"var(--fs-xs)", color:"var(--text3)", lineHeight:1.5 }}>
-            {tag.problemsSolved} solved · target 70%+ coverage = {Math.round(total*0.7)} problems
+            Solved: {tag.problemsSolved} · Interview target: {target} problems
+            {maxed && <span style={{ color:"#3B6D11", marginLeft:4 }}>✓ Reached!</span>}
           </div>
         </div>
       ) : (
@@ -165,7 +198,7 @@ export default function TopicHeatmap({ topics, solved }) {
         <div>
           <div className="card-title">Topic mastery heatmap</div>
           <div className="card-subtitle">
-            Coverage 50% · Depth 35% · Topic difficulty 15% · hover any card for breakdown
+            Targets based on interview importance · Coverage 50% · Depth 35% · Topic difficulty 15%
           </div>
         </div>
         <div style={{ display:"flex", gap:"var(--sp-1)" }}>
@@ -181,14 +214,13 @@ export default function TopicHeatmap({ topics, solved }) {
         </div>
       </div>
 
-      {/* Summary counts */}
       <div className="grid-4" style={{ marginBottom:"var(--sp-4)" }}>
         {[
-          { label:"Expert",     count:counts.expert,     color:"#3B6D11", filter:"expert"     },
-          { label:"Proficient", count:counts.proficient, color:"#185FA5", filter:"proficient" },
-          { label:"Learning",   count:counts.learning,   color:"#BA7517", filter:"learning"   },
-          { label:"Weak",       count:counts.weak,       color:"#A32D2D", filter:"weak"       },
-        ].map(({ label, count, color, filter:f }) => (
+          { label:"Expert",     count:counts.expert,     color:"#3B6D11", f:"expert" },
+          { label:"Proficient", count:counts.proficient, color:"#185FA5", f:"proficient" },
+          { label:"Learning",   count:counts.learning,   color:"#BA7517", f:"learning" },
+          { label:"Weak",       count:counts.weak,       color:"#A32D2D", f:"weak" },
+        ].map(({ label, count, color, f }) => (
           <div key={label} onClick={() => setFilter(f === filter ? "all" : f)}
             style={{ background:"var(--surface2)", borderRadius:8, padding:"var(--sp-3) var(--sp-4)", cursor:"pointer", borderLeft:"3px solid "+color, transition:"all 0.15s" }}
             onMouseEnter={e => e.currentTarget.style.background="var(--surface3)"}
@@ -199,36 +231,32 @@ export default function TopicHeatmap({ topics, solved }) {
         ))}
       </div>
 
-      {/* Legend */}
       <div style={{ display:"flex", gap:"var(--sp-4)", marginBottom:"var(--sp-4)", flexWrap:"wrap", alignItems:"center" }}>
         {[["Expert","#3B6D11","≥ 80"],["Proficient","#185FA5","55–79"],["Learning","#BA7517","35–54"],["Weak","#A32D2D","< 35"]].map(([l,c,r]) => (
           <span key={l} style={{ display:"flex", alignItems:"center", gap:5, fontSize:"var(--fs-sm)", color:"var(--text2)" }}>
             <span style={{ width:10, height:10, borderRadius:2, background:c }} />{l} <span style={{ color:"var(--text3)" }}>({r})</span>
           </span>
         ))}
-        <span style={{ fontSize:"var(--fs-xs)", color:"var(--text3)", marginLeft:"auto" }}>Hover a card for score breakdown</span>
+        <span style={{ fontSize:"var(--fs-xs)", color:"var(--text3)", marginLeft:"auto" }}>Hover a card to see breakdown and target</span>
       </div>
 
-      {/* Grid */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(145px,1fr))", gap:"var(--sp-2)" }}>
         {filtered.map(tag => <TopicCell key={tag.tagSlug} tag={tag} />)}
       </div>
 
-      {/* Scoring explanation */}
       <div style={{ marginTop:"var(--sp-5)", paddingTop:"var(--sp-4)", borderTop:"0.5px solid var(--border)", display:"flex", flexDirection:"column", gap:6 }}>
-        <div style={{ fontSize:"var(--fs-sm)", fontWeight:500, color:"var(--text2)" }}>How scoring works</div>
-        <div style={{ display:"flex", gap:"var(--sp-8)", flexWrap:"wrap" }}>
+        <div style={{ fontSize:"var(--fs-sm)", fontWeight:500, color:"var(--text2)" }}>Interview targets (realistic, not all-time total)</div>
+        <div style={{ display:"flex", gap:"var(--sp-6)", flexWrap:"wrap" }}>
           {[
-            { label:"Coverage (50%)",         color:"#185FA5", desc:"Problems solved vs total available in that topic" },
-            { label:"Depth (35%)",            color:"#BA7517", desc:"Rewards solving Medium/Hard — not just Easy problems" },
-            { label:"Topic difficulty (15%)", color:"#7F77DD", desc:"Harder topics (DP, Graph) get extra credit than easy ones (Array)" },
-          ].map(({ label, color, desc }) => (
-            <div key={label} style={{ display:"flex", gap:"var(--sp-2)", alignItems:"flex-start" }}>
-              <div style={{ width:10, height:10, borderRadius:2, background:color, flexShrink:0, marginTop:3 }} />
-              <div>
-                <div style={{ fontSize:"var(--fs-sm)", fontWeight:500, color:"var(--text2)" }}>{label}</div>
-                <div style={{ fontSize:"var(--fs-xs)", color:"var(--text3)" }}>{desc}</div>
-              </div>
+            { label:"Array",    target:200, note:"most important topic"    },
+            { label:"DP",       target:100, note:"covers all patterns"     },
+            { label:"Tree",     target:100, note:"covers all tree types"   },
+            { label:"Graph",    target:80,  note:"covers all traversals"   },
+            { label:"String",   target:120, note:"covers all patterns"     },
+            { label:"Trie",     target:30,  note:"small but valuable"      },
+          ].map(({ label, target, note }) => (
+            <div key={label} style={{ fontSize:"var(--fs-xs)", color:"var(--text3)" }}>
+              <span style={{ color:"var(--text2)", fontWeight:500 }}>{label}</span> → {target} <span style={{ opacity:0.6 }}>({note})</span>
             </div>
           ))}
         </div>
