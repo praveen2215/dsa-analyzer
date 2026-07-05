@@ -1,28 +1,26 @@
-import React, { useMemo, useState } from "react"
+import React, { useMemo, useState, useEffect } from "react"
 
-// Realistic interview targets for a student with 100-200 total problems
-// Based on what top placement candidates actually need per topic
-const TARGET_TOTALS = {
-  "array":               50,  // core topic — 50 covers all patterns
-  "dynamic-programming": 40,  // important — 40 covers all DP types
-  "string":              40,  // 40 covers all string patterns
-  "math":                20,  // secondary topic
-  "tree":                35,  // 35 covers all tree patterns
-  "depth-first-search":  30,  // overlaps with tree/graph
+const BASE_TARGETS = {
+  "array":               50,
+  "dynamic-programming": 40,
+  "string":              40,
+  "math":                20,
+  "tree":                35,
+  "depth-first-search":  30,
   "greedy":              25,
-  "binary-search":       25,  // 25 covers all binary search patterns
+  "binary-search":       25,
   "breadth-first-search":25,
-  "graph":               30,  // 30 covers all graph patterns
+  "graph":               30,
   "sorting":             20,
   "hash-table":          35,
   "two-pointers":        25,
-  "bit-manipulation":    15,  // niche
+  "bit-manipulation":    15,
   "stack":               25,
   "heap-priority-queue": 20,
   "backtracking":        20,
   "sliding-window":      20,
   "linked-list":         20,
-  "trie":                12,  // small topic
+  "trie":                12,
   "matrix":              20,
   "simulation":          15,
   "design":              15,
@@ -49,14 +47,35 @@ const HARD_PCT = {
   "binary-tree":0.22,"binary-search-tree":0.20,"topological-sort":0.25,
 }
 
-function computeScore(tag) {
-  const target  = TARGET_TOTALS[tag.tagSlug] || Math.max(10, Math.min(30, Math.round(tag.problemsSolved * 1.3)))
-  const solved  = tag.problemsSolved || 0
+const STORAGE_KEY = "topic_targets_v1"
 
-  // Factor 1: Coverage — solved vs target (50%)
+// Load saved targets from localStorage
+function loadSavedTargets() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") }
+  catch { return {} }
+}
+
+// Compute effective target — auto-bumps by 10 every time solved hits or exceeds target
+function getEffectiveTarget(slug, solved, savedTargets) {
+  const base    = BASE_TARGETS[slug] || Math.max(10, Math.min(30, Math.round(solved * 1.3)))
+  const saved   = savedTargets[slug]
+  let   current = saved !== undefined ? saved : base
+
+  // Auto-bump: if solved >= current target, keep adding 10 until we are ahead
+  while (solved >= current) {
+    current += 10
+  }
+
+  return current
+}
+
+function computeScore(tag, target) {
+  const solved = tag.problemsSolved || 0
+
+  // Factor 1: Coverage (50%)
   const coverage = Math.min(100, Math.round((solved / target) * 100))
 
-  // Factor 2: Depth — rewards solving beyond easy-only (35%)
+  // Factor 2: Depth (35%)
   const easyThresh   = Math.round(target * 0.30)
   const mediumThresh = Math.round(target * 0.75)
   let depthScore
@@ -74,7 +93,7 @@ function computeScore(tag) {
   const difficultyBonus = Math.round(hardPct * 100)
 
   const score = Math.round(coverage * 0.50 + depthScore * 0.35 + difficultyBonus * 0.15)
-  return { score: Math.min(99, score), coverage, depthScore, difficultyBonus, target }
+  return { score: Math.min(99, score), coverage, depthScore, difficultyBonus }
 }
 
 function getMastery(score) {
@@ -100,11 +119,13 @@ function ScoreBar({ label, value, color, note }) {
   )
 }
 
-function TopicCell({ tag }) {
+function TopicCell({ tag, target, baseTarget }) {
   const [hovered, setHovered] = useState(false)
-  const { score, coverage, depthScore, difficultyBonus, target } = computeScore(tag)
-  const m     = getMastery(score)
-  const maxed = tag.problemsSolved >= target
+  const { score, coverage, depthScore, difficultyBonus } = computeScore(tag, target)
+  const m          = getMastery(score)
+  const solved     = tag.problemsSolved || 0
+  const remaining  = Math.max(0, target - solved)
+  const bumps      = Math.round((target - baseTarget) / 10) // how many times target was bumped
 
   return (
     <div
@@ -135,38 +156,67 @@ function TopicCell({ tag }) {
         <div style={{ fontSize:"var(--fs-xs)", fontWeight:600, textTransform:"uppercase", letterSpacing:"0.4px", color:m.color }}>
           {m.label}
         </div>
-        {maxed && <span style={{ fontSize:9, color:"#3B6D11", fontWeight:600 }}>✓ DONE</span>}
+        {bumps > 0 && (
+          <span style={{ fontSize:9, color:"#BA7517", fontWeight:600 }}>
+            🔥 +{bumps * 10} bumped
+          </span>
+        )}
       </div>
 
       {hovered ? (
         <div style={{ borderTop:"0.5px solid var(--border)", paddingTop:"var(--sp-2)", marginTop:4 }}>
-          <ScoreBar label="Coverage (50%)"         value={coverage}        color="#185FA5" note={tag.problemsSolved+"/"+target} />
+          <ScoreBar label="Coverage (50%)"         value={coverage}        color="#185FA5" note={solved+"/"+target} />
           <ScoreBar label="Depth (35%)"            value={depthScore}      color="#BA7517" />
           <ScoreBar label="Topic difficulty (15%)" value={difficultyBonus} color="#7F77DD" />
-          <div style={{ marginTop:6, fontSize:"var(--fs-xs)", color:"var(--text3)", lineHeight:1.5 }}>
-            Solved {tag.problemsSolved} · target {target} · need {Math.max(0, target - tag.problemsSolved)} more
-            {maxed && <span style={{ color:"#3B6D11", marginLeft:4 }}>✓ Target reached!</span>}
+          <div style={{ marginTop:6, fontSize:"var(--fs-xs)", color:"var(--text3)", lineHeight:1.6 }}>
+            <div>Solved: <span style={{ color:"var(--text2)", fontWeight:600 }}>{solved}</span></div>
+            <div>Current target: <span style={{ color:"var(--text2)", fontWeight:600 }}>{target}</span>{bumps > 0 && <span style={{ color:"#BA7517", marginLeft:4 }}>({baseTarget} base + {bumps*10} auto-bumped)</span>}</div>
+            <div>Need <span style={{ color:m.color, fontWeight:600 }}>{remaining} more</span> to hit next target</div>
           </div>
         </div>
       ) : (
-        <div className="bar-track" style={{ height:4 }}>
-          <div className="bar-fill" style={{ background:m.color, width:score+"%" }} />
-        </div>
+        <>
+          <div className="bar-track" style={{ height:4 }}>
+            <div className="bar-fill" style={{ background:m.color, width:score+"%" }} />
+          </div>
+          <div style={{ fontSize:10, color:"var(--text3)", marginTop:4, display:"flex", justifyContent:"space-between" }}>
+            <span>{solved}/{target}</span>
+            {remaining > 0 && <span style={{ color:m.color }}>{remaining} more</span>}
+          </div>
+        </>
       )}
     </div>
   )
 }
 
 export default function TopicHeatmap({ topics, solved }) {
-  const [filter, setFilter] = useState("all")
+  const [filter,       setFilter]       = useState("all")
+  const [savedTargets, setSavedTargets] = useState(() => loadSavedTargets())
 
-  const allTags = useMemo(() => [
-    ...(topics?.fundamental   || []),
-    ...(topics?.intermediate  || []),
-    ...(topics?.advanced      || []),
-  ].filter(t => t.problemsSolved > 0)
-   .map(t => ({ ...t, _score: computeScore(t).score }))
-   .sort((a, b) => b._score - a._score), [topics])
+  // Save targets to localStorage whenever they update
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(savedTargets))
+  }, [savedTargets])
+
+  const allTags = useMemo(() => {
+    const tags = [
+      ...(topics?.fundamental   || []),
+      ...(topics?.intermediate  || []),
+      ...(topics?.advanced      || []),
+    ].filter(t => t.problemsSolved > 0)
+
+    return tags.map(t => {
+      const base   = BASE_TARGETS[t.tagSlug] || Math.max(10, Math.min(30, Math.round(t.problemsSolved * 1.3)))
+      const target = getEffectiveTarget(t.tagSlug, t.problemsSolved, savedTargets)
+
+      // Persist updated target if it auto-bumped
+      if (savedTargets[t.tagSlug] !== target) {
+        setSavedTargets(prev => ({ ...prev, [t.tagSlug]: target }))
+      }
+
+      return { ...t, _score: computeScore(t, target).score, _target: target, _base: base }
+    }).sort((a, b) => b._score - a._score)
+  }, [topics, savedTargets])
 
   const filtered = useMemo(() => {
     if (filter === "top10")  return allTags.slice(0, 10)
@@ -194,7 +244,7 @@ export default function TopicHeatmap({ topics, solved }) {
         <div>
           <div className="card-title">Topic mastery heatmap</div>
           <div className="card-subtitle">
-            Targets calibrated for placement-ready candidates · hover any card for details
+            Targets auto-increase by 10 when you hit them · Coverage 50% · Depth 35% · Difficulty 15%
           </div>
         </div>
         <div style={{ display:"flex", gap:"var(--sp-1)" }}>
@@ -210,7 +260,6 @@ export default function TopicHeatmap({ topics, solved }) {
         </div>
       </div>
 
-      {/* Summary */}
       <div className="grid-4" style={{ marginBottom:"var(--sp-4)" }}>
         {[
           { label:"Expert",     count:counts.expert,     color:"#3B6D11", f:"expert"     },
@@ -228,44 +277,33 @@ export default function TopicHeatmap({ topics, solved }) {
         ))}
       </div>
 
-      {/* Legend */}
       <div style={{ display:"flex", gap:"var(--sp-4)", marginBottom:"var(--sp-4)", flexWrap:"wrap", alignItems:"center" }}>
         {[["Expert","#3B6D11","≥ 80"],["Proficient","#185FA5","55–79"],["Learning","#BA7517","35–54"],["Weak","#A32D2D","< 35"]].map(([l,c,r]) => (
           <span key={l} style={{ display:"flex", alignItems:"center", gap:5, fontSize:"var(--fs-sm)", color:"var(--text2)" }}>
             <span style={{ width:10, height:10, borderRadius:2, background:c }} />{l} <span style={{ color:"var(--text3)" }}>({r})</span>
           </span>
         ))}
-        <span style={{ fontSize:"var(--fs-xs)", color:"var(--text3)", marginLeft:"auto" }}>Hover a card for score breakdown</span>
+        <span style={{ fontSize:"var(--fs-xs)", color:"var(--text3)", marginLeft:"auto" }}>Hover a card for full breakdown</span>
       </div>
 
-      {/* Cards */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(145px,1fr))", gap:"var(--sp-2)" }}>
-        {filtered.map(tag => <TopicCell key={tag.tagSlug} tag={tag} />)}
+        {filtered.map(tag => (
+          <TopicCell
+            key={tag.tagSlug}
+            tag={tag}
+            target={tag._target}
+            baseTarget={tag._base}
+          />
+        ))}
       </div>
 
-      {/* Target reference */}
-      <div style={{ marginTop:"var(--sp-5)", paddingTop:"var(--sp-4)", borderTop:"0.5px solid var(--border)" }}>
-        <div style={{ fontSize:"var(--fs-sm)", fontWeight:500, color:"var(--text2)", marginBottom:8 }}>
-          Placement-ready targets (problems needed per topic)
-        </div>
-        <div style={{ display:"flex", gap:"var(--sp-3)", flexWrap:"wrap" }}>
-          {[
-            { label:"Array",       target:50,  color:"#185FA5" },
-            { label:"DP",          target:40,  color:"#185FA5" },
-            { label:"Tree",        target:35,  color:"#185FA5" },
-            { label:"Hash Table",  target:35,  color:"#185FA5" },
-            { label:"String",      target:40,  color:"#185FA5" },
-            { label:"Graph",       target:30,  color:"#BA7517" },
-            { label:"Stack",       target:25,  color:"#BA7517" },
-            { label:"Backtrack",   target:20,  color:"#BA7517" },
-            { label:"Heap",        target:20,  color:"#BA7517" },
-            { label:"Trie",        target:12,  color:"#A32D2D" },
-          ].map(({ label, target, color }) => (
-            <div key={label} style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 10px", background:"var(--surface2)", borderRadius:6, border:"0.5px solid var(--border)" }}>
-              <span style={{ fontSize:"var(--fs-xs)", color:"var(--text2)" }}>{label}</span>
-              <span style={{ fontSize:"var(--fs-xs)", fontFamily:"var(--font-mono)", fontWeight:600, color }}>{target}</span>
-            </div>
-          ))}
+      {/* Auto-bump explanation */}
+      <div style={{ marginTop:"var(--sp-5)", padding:"var(--sp-3) var(--sp-4)", background:"rgba(186,117,23,0.06)", border:"0.5px solid rgba(186,117,23,0.2)", borderRadius:8, display:"flex", alignItems:"center", gap:10 }}>
+        <i className="fa-solid fa-fire" style={{ color:"#BA7517", flexShrink:0 }} />
+        <div style={{ fontSize:"var(--fs-xs)", color:"var(--text3)", lineHeight:1.6 }}>
+          <span style={{ color:"var(--text2)", fontWeight:500 }}>Auto-bump: </span>
+          When you hit the target for any topic, it automatically increases by 10 — keeping the challenge going.
+          Topics showing <span style={{ color:"#BA7517", fontWeight:600 }}>🔥 bumped</span> means you already crossed the base target!
         </div>
       </div>
     </div>
