@@ -1,22 +1,21 @@
-import React, { useState, useMemo } from "react"
+import React, { useState, useMemo, useEffect } from "react"
 
-// Company-specific topic requirements
-// expectedSolved = how many problems a strong candidate needs for THIS company in THIS topic
-// This is what mastery % is calculated against — not LeetCode total
+const STORAGE_KEY = "skillgap_targets_v1"
+
 const COMPANY_REQUIREMENTS = {
   Google: {
     color:"#4285F4", logo:"G", tier:"FAANG",
     minSolved:300, minHard:80,
     desc:"Focuses heavily on DP and graph problems. Expects clean code and optimal complexity.",
     topics:[
-      {slug:"dynamic-programming", weight:22, label:"Dynamic Programming", expected:60},
-      {slug:"graph",               weight:18, label:"Graphs",              expected:50},
-      {slug:"array",               weight:15, label:"Arrays",              expected:70},
-      {slug:"tree",                weight:12, label:"Trees",               expected:50},
-      {slug:"string",              weight:10, label:"Strings",             expected:40},
-      {slug:"backtracking",        weight:8,  label:"Backtracking",        expected:25},
-      {slug:"binary-search",       weight:8,  label:"Binary Search",       expected:30},
-      {slug:"heap-priority-queue", weight:7,  label:"Heaps",               expected:25},
+      {slug:"dynamic-programming", weight:22, label:"Dynamic Programming", base:60},
+      {slug:"graph",               weight:18, label:"Graphs",              base:50},
+      {slug:"array",               weight:15, label:"Arrays",              base:70},
+      {slug:"tree",                weight:12, label:"Trees",               base:50},
+      {slug:"string",              weight:10, label:"Strings",             base:40},
+      {slug:"backtracking",        weight:8,  label:"Backtracking",        base:25},
+      {slug:"binary-search",       weight:8,  label:"Binary Search",       base:30},
+      {slug:"heap-priority-queue", weight:7,  label:"Heaps",               base:25},
     ],
   },
   Meta: {
@@ -24,14 +23,14 @@ const COMPANY_REQUIREMENTS = {
     minSolved:250, minHard:60,
     desc:"Loves tree and array problems. Speed and communication matter a lot.",
     topics:[
-      {slug:"array",               weight:20, label:"Arrays",              expected:70},
-      {slug:"tree",                weight:18, label:"Trees",               expected:55},
-      {slug:"graph",               weight:15, label:"Graphs",              expected:40},
-      {slug:"dynamic-programming", weight:12, label:"Dynamic Programming", expected:40},
-      {slug:"string",              weight:12, label:"Strings",             expected:45},
-      {slug:"hash-table",          weight:10, label:"Hash Tables",         expected:35},
-      {slug:"two-pointers",        weight:8,  label:"Two Pointers",        expected:25},
-      {slug:"recursion",           weight:5,  label:"Recursion",           expected:20},
+      {slug:"array",               weight:20, label:"Arrays",              base:70},
+      {slug:"tree",                weight:18, label:"Trees",               base:55},
+      {slug:"graph",               weight:15, label:"Graphs",              base:40},
+      {slug:"dynamic-programming", weight:12, label:"Dynamic Programming", base:40},
+      {slug:"string",              weight:12, label:"Strings",             base:45},
+      {slug:"hash-table",          weight:10, label:"Hash Tables",         base:35},
+      {slug:"two-pointers",        weight:8,  label:"Two Pointers",        base:25},
+      {slug:"recursion",           weight:5,  label:"Recursion",           base:20},
     ],
   },
   Amazon: {
@@ -39,14 +38,14 @@ const COMPANY_REQUIREMENTS = {
     minSolved:200, minHard:40,
     desc:"Broad coverage expected. Leadership principles combined with solid DSA.",
     topics:[
-      {slug:"array",               weight:20, label:"Arrays",              expected:60},
-      {slug:"tree",                weight:15, label:"Trees",               expected:45},
-      {slug:"dynamic-programming", weight:15, label:"Dynamic Programming", expected:45},
-      {slug:"string",              weight:12, label:"Strings",             expected:40},
-      {slug:"graph",               weight:12, label:"Graphs",              expected:35},
-      {slug:"hash-table",          weight:10, label:"Hash Tables",         expected:30},
-      {slug:"sorting",             weight:8,  label:"Sorting",             expected:20},
-      {slug:"heap-priority-queue", weight:8,  label:"Heaps",               expected:20},
+      {slug:"array",               weight:20, label:"Arrays",              base:60},
+      {slug:"tree",                weight:15, label:"Trees",               base:45},
+      {slug:"dynamic-programming", weight:15, label:"Dynamic Programming", base:45},
+      {slug:"string",              weight:12, label:"Strings",             base:40},
+      {slug:"graph",               weight:12, label:"Graphs",              base:35},
+      {slug:"hash-table",          weight:10, label:"Hash Tables",         base:30},
+      {slug:"sorting",             weight:8,  label:"Sorting",             base:20},
+      {slug:"heap-priority-queue", weight:8,  label:"Heaps",               base:20},
     ],
   },
   Microsoft: {
@@ -54,14 +53,14 @@ const COMPANY_REQUIREMENTS = {
     minSolved:180, minHard:35,
     desc:"Strong emphasis on trees and OOP design. Good for mid-level engineers.",
     topics:[
-      {slug:"tree",                weight:20, label:"Trees",               expected:50},
-      {slug:"array",               weight:18, label:"Arrays",              expected:55},
-      {slug:"string",              weight:15, label:"Strings",             expected:40},
-      {slug:"dynamic-programming", weight:12, label:"Dynamic Programming", expected:35},
-      {slug:"linked-list",         weight:10, label:"Linked Lists",        expected:25},
-      {slug:"graph",               weight:10, label:"Graphs",              expected:30},
-      {slug:"binary-search",       weight:8,  label:"Binary Search",       expected:20},
-      {slug:"stack",               weight:7,  label:"Stacks",              expected:20},
+      {slug:"tree",                weight:20, label:"Trees",               base:50},
+      {slug:"array",               weight:18, label:"Arrays",              base:55},
+      {slug:"string",              weight:15, label:"Strings",             base:40},
+      {slug:"dynamic-programming", weight:12, label:"Dynamic Programming", base:35},
+      {slug:"linked-list",         weight:10, label:"Linked Lists",        base:25},
+      {slug:"graph",               weight:10, label:"Graphs",              base:30},
+      {slug:"binary-search",       weight:8,  label:"Binary Search",       base:20},
+      {slug:"stack",               weight:7,  label:"Stacks",              base:20},
     ],
   },
   Adobe: {
@@ -69,14 +68,14 @@ const COMPANY_REQUIREMENTS = {
     minSolved:200, minHard:45,
     desc:"Heavy focus on arrays and strings. Expects strong coding and design skills.",
     topics:[
-      {slug:"array",               weight:20, label:"Arrays",              expected:55},
-      {slug:"string",              weight:18, label:"Strings",             expected:50},
-      {slug:"dynamic-programming", weight:16, label:"Dynamic Programming", expected:40},
-      {slug:"tree",                weight:14, label:"Trees",               expected:40},
-      {slug:"graph",               weight:12, label:"Graphs",              expected:30},
-      {slug:"hash-table",          weight:10, label:"Hash Tables",         expected:30},
-      {slug:"sorting",             weight:6,  label:"Sorting",             expected:20},
-      {slug:"binary-search",       weight:4,  label:"Binary Search",       expected:15},
+      {slug:"array",               weight:20, label:"Arrays",              base:55},
+      {slug:"string",              weight:18, label:"Strings",             base:50},
+      {slug:"dynamic-programming", weight:16, label:"Dynamic Programming", base:40},
+      {slug:"tree",                weight:14, label:"Trees",               base:40},
+      {slug:"graph",               weight:12, label:"Graphs",              base:30},
+      {slug:"hash-table",          weight:10, label:"Hash Tables",         base:30},
+      {slug:"sorting",             weight:6,  label:"Sorting",             base:20},
+      {slug:"binary-search",       weight:4,  label:"Binary Search",       base:15},
     ],
   },
   Oracle: {
@@ -84,13 +83,13 @@ const COMPANY_REQUIREMENTS = {
     minSolved:150, minHard:25,
     desc:"Focuses on data structures and database-related problem solving. SRM regular recruiter.",
     topics:[
-      {slug:"array",               weight:22, label:"Arrays",              expected:45},
-      {slug:"string",              weight:18, label:"Strings",             expected:40},
-      {slug:"tree",                weight:16, label:"Trees",               expected:35},
-      {slug:"dynamic-programming", weight:14, label:"Dynamic Programming", expected:30},
-      {slug:"hash-table",          weight:12, label:"Hash Tables",         expected:25},
-      {slug:"graph",               weight:10, label:"Graphs",              expected:25},
-      {slug:"sorting",             weight:8,  label:"Sorting",             expected:15},
+      {slug:"array",               weight:22, label:"Arrays",              base:45},
+      {slug:"string",              weight:18, label:"Strings",             base:40},
+      {slug:"tree",                weight:16, label:"Trees",               base:35},
+      {slug:"dynamic-programming", weight:14, label:"Dynamic Programming", base:30},
+      {slug:"hash-table",          weight:12, label:"Hash Tables",         base:25},
+      {slug:"graph",               weight:10, label:"Graphs",              base:25},
+      {slug:"sorting",             weight:8,  label:"Sorting",             base:15},
     ],
   },
   IBM: {
@@ -98,13 +97,13 @@ const COMPANY_REQUIREMENTS = {
     minSolved:120, minHard:15,
     desc:"Expects strong fundamentals in arrays, strings and data structures. Visits SRM regularly.",
     topics:[
-      {slug:"array",               weight:25, label:"Arrays",              expected:40},
-      {slug:"string",              weight:20, label:"Strings",             expected:35},
-      {slug:"hash-table",          weight:16, label:"Hash Tables",         expected:25},
-      {slug:"tree",                weight:14, label:"Trees",               expected:30},
-      {slug:"sorting",             weight:12, label:"Sorting",             expected:15},
-      {slug:"dynamic-programming", weight:8,  label:"Dynamic Programming", expected:20},
-      {slug:"graph",               weight:5,  label:"Graphs",              expected:15},
+      {slug:"array",               weight:25, label:"Arrays",              base:40},
+      {slug:"string",              weight:20, label:"Strings",             base:35},
+      {slug:"hash-table",          weight:16, label:"Hash Tables",         base:25},
+      {slug:"tree",                weight:14, label:"Trees",               base:30},
+      {slug:"sorting",             weight:12, label:"Sorting",             base:15},
+      {slug:"dynamic-programming", weight:8,  label:"Dynamic Programming", base:20},
+      {slug:"graph",               weight:5,  label:"Graphs",              base:15},
     ],
   },
   Optum: {
@@ -112,13 +111,13 @@ const COMPANY_REQUIREMENTS = {
     minSolved:120, minHard:15,
     desc:"United Health Group tech arm. Visits SRM Ramapuram. Focuses on problem solving fundamentals.",
     topics:[
-      {slug:"array",               weight:25, label:"Arrays",              expected:40},
-      {slug:"string",              weight:20, label:"Strings",             expected:35},
-      {slug:"hash-table",          weight:15, label:"Hash Tables",         expected:25},
-      {slug:"tree",                weight:15, label:"Trees",               expected:30},
-      {slug:"dynamic-programming", weight:12, label:"Dynamic Programming", expected:20},
-      {slug:"sorting",             weight:8,  label:"Sorting",             expected:15},
-      {slug:"graph",               weight:5,  label:"Graphs",              expected:15},
+      {slug:"array",               weight:25, label:"Arrays",              base:40},
+      {slug:"string",              weight:20, label:"Strings",             base:35},
+      {slug:"hash-table",          weight:15, label:"Hash Tables",         base:25},
+      {slug:"tree",                weight:15, label:"Trees",               base:30},
+      {slug:"dynamic-programming", weight:12, label:"Dynamic Programming", base:20},
+      {slug:"sorting",             weight:8,  label:"Sorting",             base:15},
+      {slug:"graph",               weight:5,  label:"Graphs",              base:15},
     ],
   },
   TCS: {
@@ -126,12 +125,12 @@ const COMPANY_REQUIREMENTS = {
     minSolved:60, minHard:3,
     desc:"Mass recruiter at SRM. TCS NQT focuses on basic aptitude, arrays, strings and math.",
     topics:[
-      {slug:"array",               weight:28, label:"Arrays",              expected:25},
-      {slug:"string",              weight:25, label:"Strings",             expected:20},
-      {slug:"math",                weight:18, label:"Math",                expected:15},
-      {slug:"sorting",             weight:14, label:"Sorting",             expected:10},
-      {slug:"hash-table",          weight:10, label:"Hash Tables",         expected:10},
-      {slug:"dynamic-programming", weight:5,  label:"Dynamic Programming", expected:8 },
+      {slug:"array",               weight:28, label:"Arrays",              base:25},
+      {slug:"string",              weight:25, label:"Strings",             base:20},
+      {slug:"math",                weight:18, label:"Math",                base:15},
+      {slug:"sorting",             weight:14, label:"Sorting",             base:10},
+      {slug:"hash-table",          weight:10, label:"Hash Tables",         base:10},
+      {slug:"dynamic-programming", weight:5,  label:"Dynamic Programming", base:8 },
     ],
   },
   Infosys: {
@@ -139,12 +138,12 @@ const COMPANY_REQUIREMENTS = {
     minSolved:60, minHard:3,
     desc:"Major SRM recruiter. Infosys InfyTQ focuses on basic programming and data structures.",
     topics:[
-      {slug:"array",               weight:28, label:"Arrays",              expected:25},
-      {slug:"string",              weight:25, label:"Strings",             expected:20},
-      {slug:"sorting",             weight:16, label:"Sorting",             expected:10},
-      {slug:"math",                weight:14, label:"Math",                expected:12},
-      {slug:"hash-table",          weight:10, label:"Hash Tables",         expected:10},
-      {slug:"linked-list",         weight:7,  label:"Linked Lists",        expected:8 },
+      {slug:"array",               weight:28, label:"Arrays",              base:25},
+      {slug:"string",              weight:25, label:"Strings",             base:20},
+      {slug:"sorting",             weight:16, label:"Sorting",             base:10},
+      {slug:"math",                weight:14, label:"Math",                base:12},
+      {slug:"hash-table",          weight:10, label:"Hash Tables",         base:10},
+      {slug:"linked-list",         weight:7,  label:"Linked Lists",        base:8 },
     ],
   },
   Wipro: {
@@ -152,12 +151,12 @@ const COMPANY_REQUIREMENTS = {
     minSolved:50, minHard:2,
     desc:"Wipro NLTH. Frequent SRM recruiter. Basic DSA, patterns and aptitude.",
     topics:[
-      {slug:"array",               weight:30, label:"Arrays",              expected:20},
-      {slug:"string",              weight:25, label:"Strings",             expected:18},
-      {slug:"math",                weight:18, label:"Math",                expected:12},
-      {slug:"sorting",             weight:15, label:"Sorting",             expected:8 },
-      {slug:"hash-table",          weight:8,  label:"Hash Tables",         expected:8 },
-      {slug:"linked-list",         weight:4,  label:"Linked Lists",        expected:5 },
+      {slug:"array",               weight:30, label:"Arrays",              base:20},
+      {slug:"string",              weight:25, label:"Strings",             base:18},
+      {slug:"math",                weight:18, label:"Math",                base:12},
+      {slug:"sorting",             weight:15, label:"Sorting",             base:8 },
+      {slug:"hash-table",          weight:8,  label:"Hash Tables",         base:8 },
+      {slug:"linked-list",         weight:4,  label:"Linked Lists",        base:5 },
     ],
   },
   Cognizant: {
@@ -165,12 +164,12 @@ const COMPANY_REQUIREMENTS = {
     minSolved:50, minHard:2,
     desc:"Top SRM recruiter every year. GenC and GenC Next tracks. Focuses on core DSA.",
     topics:[
-      {slug:"array",               weight:30, label:"Arrays",              expected:20},
-      {slug:"string",              weight:25, label:"Strings",             expected:18},
-      {slug:"math",                weight:16, label:"Math",                expected:12},
-      {slug:"sorting",             weight:13, label:"Sorting",             expected:8 },
-      {slug:"hash-table",          weight:10, label:"Hash Tables",         expected:8 },
-      {slug:"linked-list",         weight:6,  label:"Linked Lists",        expected:5 },
+      {slug:"array",               weight:30, label:"Arrays",              base:20},
+      {slug:"string",              weight:25, label:"Strings",             base:18},
+      {slug:"math",                weight:16, label:"Math",                base:12},
+      {slug:"sorting",             weight:13, label:"Sorting",             base:8 },
+      {slug:"hash-table",          weight:10, label:"Hash Tables",         base:8 },
+      {slug:"linked-list",         weight:6,  label:"Linked Lists",        base:5 },
     ],
   },
   Accenture: {
@@ -178,11 +177,11 @@ const COMPANY_REQUIREMENTS = {
     minSolved:40, minHard:1,
     desc:"Very high volume SRM recruiter. Accenture ASE test is mostly arrays, strings and aptitude.",
     topics:[
-      {slug:"array",               weight:32, label:"Arrays",              expected:15},
-      {slug:"string",              weight:28, label:"Strings",             expected:15},
-      {slug:"math",                weight:20, label:"Math",                expected:10},
-      {slug:"sorting",             weight:12, label:"Sorting",             expected:6 },
-      {slug:"hash-table",          weight:8,  label:"Hash Tables",         expected:6 },
+      {slug:"array",               weight:32, label:"Arrays",              base:15},
+      {slug:"string",              weight:28, label:"Strings",             base:15},
+      {slug:"math",                weight:20, label:"Math",                base:10},
+      {slug:"sorting",             weight:12, label:"Sorting",             base:6 },
+      {slug:"hash-table",          weight:8,  label:"Hash Tables",         base:6 },
     ],
   },
   Capgemini: {
@@ -190,11 +189,11 @@ const COMPANY_REQUIREMENTS = {
     minSolved:40, minHard:1,
     desc:"Regular SRM recruiter. Game-based assessment + coding. Focus on basics.",
     topics:[
-      {slug:"array",               weight:32, label:"Arrays",              expected:15},
-      {slug:"string",              weight:28, label:"Strings",             expected:15},
-      {slug:"math",                weight:20, label:"Math",                expected:10},
-      {slug:"sorting",             weight:12, label:"Sorting",             expected:6 },
-      {slug:"hash-table",          weight:8,  label:"Hash Tables",         expected:6 },
+      {slug:"array",               weight:32, label:"Arrays",              base:15},
+      {slug:"string",              weight:28, label:"Strings",             base:15},
+      {slug:"math",                weight:20, label:"Math",                base:10},
+      {slug:"sorting",             weight:12, label:"Sorting",             base:6 },
+      {slug:"hash-table",          weight:8,  label:"Hash Tables",         base:6 },
     ],
   },
 }
@@ -202,6 +201,19 @@ const COMPANY_REQUIREMENTS = {
 const TIER_ORDER  = ["FAANG","Mid","Service"]
 const TIER_LABELS = { FAANG:"FAANG / Top Product", Mid:"Mid-tier Product", Service:"Service Based (SRM Regulars)" }
 const TIER_COLORS = { FAANG:"#185FA5", Mid:"#BA7517", Service:"#3B6D11" }
+
+function loadSavedTargets() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") }
+  catch { return {} }
+}
+
+// Auto-bump by +5 every time solved hits or exceeds target
+function getEffectiveTarget(companyKey, slug, solved, base, savedTargets) {
+  const storageKey = `${companyKey}_${slug}`
+  let current = savedTargets[storageKey] !== undefined ? savedTargets[storageKey] : base
+  while (solved >= current) { current += 5 }
+  return current
+}
 
 function buildTopicLookup(topics) {
   const all = [...(topics?.fundamental||[]),...(topics?.intermediate||[]),...(topics?.advanced||[])]
@@ -218,29 +230,24 @@ function buildTopicLookup(topics) {
   return map
 }
 
-function getTopicMastery(slug, expected, lookup) {
+function getSolvedCount(slug, lookup) {
   const keys = [slug, slug.toLowerCase(), slug.replace(/-/g," ")]
-  let solved = null
-  for (const k of keys) { if (lookup[k] !== undefined) { solved = lookup[k]; break } }
-  if (solved === null) return 0
-  // Mastery = solved / company-specific expected count (not LeetCode total)
-  return Math.min(100, Math.round((solved / expected) * 100))
+  for (const k of keys) { if (lookup[k] !== undefined) return lookup[k] }
+  return 0
 }
 
-function computeReadiness(company, data) {
+function computeReadiness(companyKey, data, savedTargets) {
   const { solved, topics } = data
-  const cfg    = COMPANY_REQUIREMENTS[company]
+  const cfg    = COMPANY_REQUIREMENTS[companyKey]
   const lookup = buildTopicLookup(topics)
 
-  const topicScores = cfg.topics.map(t => ({
-    ...t,
-    mastery: getTopicMastery(t.slug, t.expected, lookup),
-    solved:  (() => {
-      const keys = [t.slug, t.slug.toLowerCase(), t.slug.replace(/-/g," ")]
-      for (const k of keys) { if (lookup[k] !== undefined) return lookup[k] }
-      return 0
-    })(),
-  }))
+  const topicScores = cfg.topics.map(t => {
+    const solvedCount = getSolvedCount(t.slug, lookup)
+    const target      = getEffectiveTarget(companyKey, t.slug, solvedCount, t.base, savedTargets)
+    const mastery     = Math.min(100, Math.round((solvedCount / target) * 100))
+    const bumped      = target > t.base
+    return { ...t, solved:solvedCount, target, mastery, bumped }
+  })
 
   const totalWeight = topicScores.reduce((s,t) => s + t.weight, 0)
   const topicScore  = Math.round(topicScores.reduce((s,t) => s + (t.mastery * t.weight / totalWeight), 0))
@@ -263,39 +270,72 @@ function computeReadiness(company, data) {
   return { overall, topicScore, volScore, hardScore, topicScores, gaps, tier }
 }
 
-function GapBar({ label, mastery, color, solved, expected }) {
-  const reached = mastery >= 100
+function GapBar({ label, mastery, color, solved, target, base, bumped }) {
+  const remaining = Math.max(0, target - solved)
   return (
     <div style={{ marginBottom:12 }}>
       <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, marginBottom:4 }}>
-        <span style={{ color:"var(--text2)" }}>{label}</span>
-        <span style={{ fontFamily:"var(--font-mono)", color:reached?"#3B6D11":"var(--text3)", display:"flex", alignItems:"center", gap:6 }}>
-          <span style={{ color:reached?"#3B6D11":solved>0?"var(--text)":"var(--text3)" }}>{solved}</span>
-          <span style={{ color:"var(--text3)" }}>/ {expected} needed</span>
-          {reached && <span style={{ color:"#3B6D11" }}>✓</span>}
+        <span style={{ color:"var(--text2)", display:"flex", alignItems:"center", gap:5 }}>
+          {label}
+          {bumped && <span style={{ fontSize:9, color:"#BA7517", fontWeight:600 }}>🔥 +{target-base}</span>}
+        </span>
+        <span style={{ fontFamily:"var(--font-mono)", display:"flex", alignItems:"center", gap:5 }}>
+          <span style={{ color:solved>0?"var(--text)":"var(--text3)" }}>{solved}</span>
+          <span style={{ color:"var(--text3)" }}>/ {target}</span>
+          {mastery >= 100 && <span style={{ color:"#3B6D11" }}>✓</span>}
         </span>
       </div>
       <div style={{ height:7, background:"var(--surface3)", borderRadius:4, overflow:"hidden" }}>
-        <div style={{ height:"100%", background:reached?"#3B6D11":mastery>60?color:"#A32D2D", borderRadius:4, width:Math.min(100,mastery)+"%", transition:"width 1s ease" }} />
+        <div style={{ height:"100%", background:mastery>=100?"#3B6D11":mastery>60?color:"#A32D2D", borderRadius:4, width:Math.min(100,mastery)+"%", transition:"width 1s ease" }} />
       </div>
-      <div style={{ fontSize:10, color:reached?"#3B6D11":mastery>60?"var(--text3)":"#A32D2D", marginTop:3, textAlign:"right" }}>
-        {reached ? "Target met!" : mastery+"%"+( Math.max(0, expected-solved)>0 ? " · need "+Math.max(0,expected-solved)+" more" : "" )}
+      <div style={{ fontSize:10, marginTop:3, display:"flex", justifyContent:"space-between" }}>
+        <span style={{ color:"var(--text3)" }}>{mastery}%</span>
+        {remaining > 0
+          ? <span style={{ color:mastery>60?color:"#A32D2D" }}>need {remaining} more</span>
+          : <span style={{ color:"#3B6D11" }}>target met! next: {target+5}</span>
+        }
       </div>
     </div>
   )
 }
 
 export default function SkillGapAnalyzer({ data }) {
-  const [selected, setSelected] = useState("Google")
+  const [selected,     setSelected]     = useState("Google")
+  const [savedTargets, setSavedTargets] = useState(() => loadSavedTargets())
+
+  // Persist targets to localStorage
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(savedTargets))
+  }, [savedTargets])
+
+  const lookup = useMemo(() => buildTopicLookup(data.topics), [data.topics])
+
+  // Auto-bump and persist targets when solved hits target
+  useEffect(() => {
+    const cfg     = COMPANY_REQUIREMENTS[selected]
+    const updates = {}
+    cfg.topics.forEach(t => {
+      const solvedCount = getSolvedCount(t.slug, lookup)
+      const storageKey  = `${selected}_${t.slug}`
+      const current     = savedTargets[storageKey] !== undefined ? savedTargets[storageKey] : t.base
+      let   next        = current
+      while (solvedCount >= next) { next += 5 }
+      if (next !== current) updates[storageKey] = next
+    })
+    if (Object.keys(updates).length > 0) {
+      setSavedTargets(prev => ({ ...prev, ...updates }))
+    }
+  }, [selected, lookup])
+
   const company  = COMPANY_REQUIREMENTS[selected]
-  const analysis = useMemo(() => computeReadiness(selected, data), [selected, data])
+  const analysis = useMemo(() => computeReadiness(selected, data, savedTargets), [selected, data, savedTargets])
 
   return (
     <div className="card" style={{ padding:"22px 24px", marginBottom:24 }}>
       <div className="card-header">
         <div>
           <div className="card-title">Skill gap analyzer</div>
-          <div className="card-subtitle">Mastery = your solved count vs company-specific target — not LeetCode total</div>
+          <div className="card-subtitle">Targets auto-increase by +5 when met · your solved vs company expected count</div>
         </div>
       </div>
 
@@ -379,8 +419,9 @@ export default function SkillGapAnalyzer({ data }) {
                 </div>
               )
             })}
-            <div style={{ marginTop:8, paddingTop:8, borderTop:"0.5px solid var(--border)", fontSize:10, color:"var(--text3)" }}>
-              Mastery % = your solved ÷ company expected count per topic
+            <div style={{ marginTop:8, paddingTop:8, borderTop:"0.5px solid var(--border)", fontSize:10, color:"var(--text3)", display:"flex", alignItems:"center", gap:6 }}>
+              <i className="fa-solid fa-fire" style={{ color:"#BA7517" }} />
+              Targets auto-increase by +5 when you hit them — keeps you improving!
             </div>
           </div>
         </div>
@@ -391,11 +432,12 @@ export default function SkillGapAnalyzer({ data }) {
             Topic coverage for {selected}
           </div>
           <div style={{ fontSize:11, color:"var(--text3)", marginBottom:12 }}>
-            Showing: your solved count / {selected}'s expected count per topic
+            Your solved / target · 🔥 = auto-bumped past base target
           </div>
           <div style={{ marginBottom:16 }}>
             {analysis.topicScores.map(t => (
-              <GapBar key={t.slug} label={t.label} mastery={t.mastery} color={company.color} solved={t.solved} expected={t.expected} />
+              <GapBar key={t.slug} label={t.label} mastery={t.mastery} color={company.color}
+                solved={t.solved} target={t.target} base={t.base} bumped={t.bumped} />
             ))}
           </div>
 
@@ -412,11 +454,11 @@ export default function SkillGapAnalyzer({ data }) {
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:12, fontWeight:500, color:"var(--text)" }}>{t.label}</div>
                       <div style={{ fontSize:10, color:"var(--text3)", marginTop:2 }}>
-                        Solved {t.solved} of {t.expected} expected · {t.mastery}% done · need {Math.max(0,t.expected-t.solved)} more
+                        {t.solved} / {t.target} · {t.mastery}% · need {Math.max(0,t.target-t.solved)} more
                       </div>
                     </div>
                     <div style={{ fontSize:11, fontWeight:600, color:"#A32D2D", fontFamily:"var(--font-mono)" }}>
-                      {Math.max(0,t.expected-t.solved)} left
+                      {Math.max(0,t.target-t.solved)} left
                     </div>
                   </div>
                 ))}
@@ -429,7 +471,7 @@ export default function SkillGapAnalyzer({ data }) {
             <div style={{ padding:"14px 16px", background:"rgba(59,109,17,0.08)", border:"0.5px solid rgba(59,109,17,0.2)", borderRadius:10, textAlign:"center" }}>
               <i className="fa-solid fa-trophy" style={{ color:"#3B6D11", fontSize:24, display:"block", marginBottom:8 }} />
               <div style={{ fontSize:13, fontWeight:600, color:"#3B6D11" }}>All topic targets met!</div>
-              <div style={{ fontSize:12, color:"var(--text2)", marginTop:4 }}>You meet the requirements for {selected}. Apply now! 🚀</div>
+              <div style={{ fontSize:12, color:"var(--text2)", marginTop:4 }}>Keep going — targets will auto-bump by +5! 🚀</div>
             </div>
           )}
         </div>
