@@ -6,7 +6,7 @@ const isProduction = process.env.NODE_ENV === "production"
 let pool, userQueries, profileQueries, historyQueries
 
 if (isProduction) {
-  // ── PostgreSQL (Render) ───────────────────────────────────────────────────
+  // ── PostgreSQL (Neon) ───────────────────────────────────────────────────
   pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
