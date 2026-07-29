@@ -300,7 +300,9 @@ function GapBar({ label, mastery, color, solved, target, base, bumped }) {
 }
 
 export default function SkillGapAnalyzer({ data }) {
-  const [selected,     setSelected]     = useState("Google")
+  const [selected, setSelected] = useState("Google")
+  const [search,   setSearch]   = useState("")
+  const [search,       setSearch]       = useState("")
   const [savedTargets, setSavedTargets] = useState(() => loadSavedTargets())
 
   // Persist targets to localStorage
@@ -327,6 +329,13 @@ export default function SkillGapAnalyzer({ data }) {
     }
   }, [selected, lookup])
 
+  const filteredCompanies = useMemo(() => {
+    if (!search.trim()) return Object.entries(COMPANY_REQUIREMENTS)
+    return Object.entries(COMPANY_REQUIREMENTS).filter(([name]) =>
+      name.toLowerCase().includes(search.toLowerCase())
+    )
+  }, [search])
+
   const company  = COMPANY_REQUIREMENTS[selected]
   const analysis = useMemo(() => computeReadiness(selected, data, savedTargets), [selected, data, savedTargets])
 
@@ -339,6 +348,29 @@ export default function SkillGapAnalyzer({ data }) {
         </div>
       </div>
 
+      {/* Search box */}
+      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12, background:"var(--surface2)", border:"0.5px solid var(--border2)", borderRadius:9, padding:"7px 14px" }}>
+        <i className="fa-solid fa-magnifying-glass" style={{ color:"var(--text3)", fontSize:12 }} />
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search company e.g. Wipro, Infosys, Google..."
+          style={{ background:"none", border:"none", outline:"none", color:"var(--text)", fontSize:12, width:"100%", fontFamily:"var(--font-main)" }}
+        />
+        {search && (
+          <i className="fa-solid fa-xmark" onClick={() => setSearch("")}
+            style={{ color:"var(--text3)", fontSize:11, cursor:"pointer" }} />
+        )}
+      </div>
+
+      {/* No results */}
+      {filteredCompanies.length === 0 && (
+        <div style={{ padding:"12px 14px", background:"var(--surface2)", borderRadius:8, border:"0.5px solid var(--border)", fontSize:12, color:"var(--text3)", marginBottom:12, textAlign:"center" }}>
+          No company found matching "<span style={{ color:"var(--text2)" }}>{search}</span>" · Currently tracking 14 companies
+        </div>
+      )}
+
       {/* Company selector grouped by tier */}
       <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:16 }}>
         {TIER_ORDER.map(tier => (
@@ -348,7 +380,7 @@ export default function SkillGapAnalyzer({ data }) {
               {TIER_LABELS[tier]}
             </div>
             <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-              {Object.entries(COMPANY_REQUIREMENTS)
+              {filteredCompanies
                 .filter(([,cfg]) => cfg.tier === tier)
                 .map(([name, cfg]) => (
                   <button key={name} onClick={() => setSelected(name)}
