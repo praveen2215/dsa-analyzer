@@ -207,11 +207,11 @@ function loadSavedTargets() {
   catch { return {} }
 }
 
-// Auto-bump by +5 every time solved hits or exceeds target
+// Auto-bump by +10 every time solved hits or exceeds target
 function getEffectiveTarget(companyKey, slug, solved, base, savedTargets) {
   const storageKey = `${companyKey}_${slug}`
   let current = savedTargets[storageKey] !== undefined ? savedTargets[storageKey] : base
-  while (solved >= current) { current += 5 }
+  while (solved >= current) { current += 10 }
   return current
 }
 
@@ -292,7 +292,7 @@ function GapBar({ label, mastery, color, solved, target, base, bumped }) {
         <span style={{ color:"var(--text3)" }}>{mastery}%</span>
         {remaining > 0
           ? <span style={{ color:mastery>60?color:"#A32D2D" }}>need {remaining} more</span>
-          : <span style={{ color:"#3B6D11" }}>target met! next: {target+5}</span>
+          : <span style={{ color:"#3B6D11" }}>target met! next: {target+10}</span>
         }
       </div>
     </div>
@@ -319,7 +319,7 @@ export default function SkillGapAnalyzer({ data }) {
       const storageKey  = `${selected}_${t.slug}`
       const current     = savedTargets[storageKey] !== undefined ? savedTargets[storageKey] : t.base
       let   next        = current
-      while (solvedCount >= next) { next += 5 }
+      while (solvedCount >= next) { next += 10 }
       if (next !== current) updates[storageKey] = next
     })
     if (Object.keys(updates).length > 0) {
@@ -335,7 +335,7 @@ export default function SkillGapAnalyzer({ data }) {
       <div className="card-header">
         <div>
           <div className="card-title">Skill gap analyzer</div>
-          <div className="card-subtitle">Targets auto-increase by +5 when met · your solved vs company expected count</div>
+          <div className="card-subtitle">Targets auto-increase by +10 when met · your solved vs company expected count</div>
         </div>
       </div>
 
@@ -421,7 +421,7 @@ export default function SkillGapAnalyzer({ data }) {
             })}
             <div style={{ marginTop:8, paddingTop:8, borderTop:"0.5px solid var(--border)", fontSize:10, color:"var(--text3)", display:"flex", alignItems:"center", gap:6 }}>
               <i className="fa-solid fa-fire" style={{ color:"#BA7517" }} />
-              Targets auto-increase by +5 when you hit them — keeps you improving!
+              Targets auto-increase by +10 when you hit them — keeps you improving!
             </div>
           </div>
         </div>
@@ -471,7 +471,7 @@ export default function SkillGapAnalyzer({ data }) {
             <div style={{ padding:"14px 16px", background:"rgba(59,109,17,0.08)", border:"0.5px solid rgba(59,109,17,0.2)", borderRadius:10, textAlign:"center" }}>
               <i className="fa-solid fa-trophy" style={{ color:"#3B6D11", fontSize:24, display:"block", marginBottom:8 }} />
               <div style={{ fontSize:13, fontWeight:600, color:"#3B6D11" }}>All topic targets met!</div>
-              <div style={{ fontSize:12, color:"var(--text2)", marginTop:4 }}>Keep going — targets will auto-bump by +5! 🚀</div>
+              <div style={{ fontSize:12, color:"var(--text2)", marginTop:4 }}>Keep going — targets will auto-bump by +10! 🚀</div>
             </div>
           )}
         </div>
