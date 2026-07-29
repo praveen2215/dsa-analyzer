@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react"
+import { EXTENDED_COMPANIES } from "./CompanyDatabase"
 
 const STORAGE_KEY = "skillgap_targets_v1"
 
@@ -201,6 +202,7 @@ const COMPANY_REQUIREMENTS = {
 const TIER_ORDER  = ["FAANG","Mid","Service"]
 const TIER_LABELS = { FAANG:"FAANG / Top Product", Mid:"Mid-tier Product", Service:"Service Based (SRM Regulars)" }
 const TIER_COLORS = { FAANG:"#185FA5", Mid:"#BA7517", Service:"#3B6D11" }
+const ALL_COMPANIES = { ...COMPANY_REQUIREMENTS, ...EXTENDED_COMPANIES }
 
 function loadSavedTargets() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") }
