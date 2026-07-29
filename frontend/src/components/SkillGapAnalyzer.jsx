@@ -238,7 +238,7 @@ function getSolvedCount(slug, lookup) {
 
 function computeReadiness(companyKey, data, savedTargets) {
   const { solved, topics } = data
-  const cfg    = COMPANY_REQUIREMENTS[companyKey]
+  const cfg    = ALL_COMPANIES[companyKey] || COMPANY_REQUIREMENTS[companyKey]
   const lookup = buildTopicLookup(topics)
 
   const topicScores = cfg.topics.map(t => {
@@ -331,12 +331,12 @@ export default function SkillGapAnalyzer({ data }) {
 
   const filteredCompanies = useMemo(() => {
     if (!search.trim()) return Object.entries(COMPANY_REQUIREMENTS)
-    return Object.entries(COMPANY_REQUIREMENTS).filter(([name]) =>
+    return Object.entries(ALL_COMPANIES).filter(([name]) =>
       name.toLowerCase().includes(search.toLowerCase())
     )
   }, [search])
 
-  const company  = COMPANY_REQUIREMENTS[selected]
+  const company  = ALL_COMPANIES[selected] || COMPANY_REQUIREMENTS[selected]
   const analysis = useMemo(() => computeReadiness(selected, data, savedTargets), [selected, data, savedTargets])
 
   return (
