@@ -321,7 +321,7 @@ const filteredCompanies = useMemo(() => {
 
   // Auto-bump and persist targets when solved hits target
   useEffect(() => {
-    const cfg     = COMPANY_REQUIREMENTS[selected]
+    const cfg = ALL_COMPANIES[selected] || COMPANY_REQUIREMENTS[selected]
     const updates = {}
     cfg.topics.forEach(t => {
       const solvedCount = getSolvedCount(t.slug, lookup)
@@ -371,34 +371,54 @@ const filteredCompanies = useMemo(() => {
         </div>
       )}
 
-      {/* Company selector grouped by tier */}
-      <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:16 }}>
-        {TIER_ORDER.map(tier => (
-          <div key={tier}>
-            <div style={{ fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:"1px", color:TIER_COLORS[tier], marginBottom:6, display:"flex", alignItems:"center", gap:8 }}>
-              <span style={{ width:6, height:6, borderRadius:"50%", background:TIER_COLORS[tier], flexShrink:0 }} />
-              {TIER_LABELS[tier]}
-            </div>
-            <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-              {filteredCompanies
-                .filter(([,cfg]) => cfg.tier === tier)
-                .map(([name, cfg]) => (
-                  <button key={name} onClick={() => setSelected(name)}
-                    style={{
-                      padding:"5px 12px", borderRadius:7, cursor:"pointer",
-                      border:"0.5px solid "+(selected===name ? cfg.color+"88":"var(--border)"),
-                      background:selected===name ? cfg.color+"18":"var(--surface2)",
-                      color:selected===name ? cfg.color:"var(--text2)",
-                      fontSize:11, fontWeight:selected===name ? 600 : 400,
-                      fontFamily:"var(--font-main)", transition:"all 0.15s",
-                    }}>
-                    {name}
-                  </button>
-                ))}
-            </div>
-          </div>
-        ))}
+{/* Company selector — tier groups when not searching, flat list when searching */}
+<div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:16 }}>
+  {search.trim() ? (
+    // Flat search results
+    <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+      {filteredCompanies.map(([name, cfg]) => (
+        <button key={name} onClick={() => { setSelected(name); setSearch("") }}
+          style={{
+            padding:"5px 12px", borderRadius:7, cursor:"pointer",
+            border:"0.5px solid "+(selected===name ? cfg.color+"88":"var(--border)"),
+            background:selected===name ? cfg.color+"18":"var(--surface2)",
+            color:selected===name ? cfg.color:"var(--text2)",
+            fontSize:11, fontWeight:selected===name ? 600 : 400,
+            fontFamily:"var(--font-main)", transition:"all 0.15s",
+          }}>
+          {name}
+        </button>
+      ))}
+    </div>
+  ) : (
+    // Tier grouped view (default)
+    TIER_ORDER.map(tier => (
+      <div key={tier}>
+        <div style={{ fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:"1px", color:TIER_COLORS[tier], marginBottom:6, display:"flex", alignItems:"center", gap:8 }}>
+          <span style={{ width:6, height:6, borderRadius:"50%", background:TIER_COLORS[tier], flexShrink:0 }} />
+          {TIER_LABELS[tier]}
+        </div>
+        <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+          {Object.entries(COMPANY_REQUIREMENTS)
+            .filter(([,cfg]) => cfg.tier === tier)
+            .map(([name, cfg]) => (
+              <button key={name} onClick={() => setSelected(name)}
+                style={{
+                  padding:"5px 12px", borderRadius:7, cursor:"pointer",
+                  border:"0.5px solid "+(selected===name ? cfg.color+"88":"var(--border)"),
+                  background:selected===name ? cfg.color+"18":"var(--surface2)",
+                  color:selected===name ? cfg.color:"var(--text2)",
+                  fontSize:11, fontWeight:selected===name ? 600 : 400,
+                  fontFamily:"var(--font-main)", transition:"all 0.15s",
+                }}>
+                {name}
+              </button>
+            ))}
+        </div>
       </div>
+    ))
+  )}
+</div>
 
       {/* Company description */}
       <div style={{ padding:"10px 14px", background:"var(--surface2)", borderRadius:8, border:"0.5px solid var(--border)", marginBottom:16, fontSize:12, color:"var(--text2)", display:"flex", alignItems:"center", gap:10 }}>
