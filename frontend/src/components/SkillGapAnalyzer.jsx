@@ -310,7 +310,6 @@ const filteredCompanies = useMemo(() => {
     name.toLowerCase().includes(search.toLowerCase())
   )
 }, [search])
-  const [search, setSearch] = useState("")
   const [savedTargets, setSavedTargets] = useState(() => loadSavedTargets())
 
   // Persist targets to localStorage
