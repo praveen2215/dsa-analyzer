@@ -337,13 +337,6 @@ const filteredCompanies = useMemo(() => {
     }
   }, [selected, lookup])
 
-  const filteredCompanies = useMemo(() => {
-    if (!search.trim()) return Object.entries(COMPANY_REQUIREMENTS)
-    return Object.entries(ALL_COMPANIES).filter(([name]) =>
-      name.toLowerCase().includes(search.toLowerCase())
-    )
-  }, [search])
-
   const company  = ALL_COMPANIES[selected] || COMPANY_REQUIREMENTS[selected]
   const analysis = useMemo(() => computeReadiness(selected, data, savedTargets), [selected, data, savedTargets])
 
