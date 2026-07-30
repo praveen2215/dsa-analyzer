@@ -303,8 +303,7 @@ function GapBar({ label, mastery, color, solved, target, base, bumped }) {
 
 export default function SkillGapAnalyzer({ data }) {
   const [selected, setSelected] = useState("Google")
-  const [search,   setSearch]   = useState("")
-  const [search,       setSearch]       = useState("")
+  const [search, setSearch] = useState("")
   const [savedTargets, setSavedTargets] = useState(() => loadSavedTargets())
 
   // Persist targets to localStorage
