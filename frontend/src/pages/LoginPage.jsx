@@ -128,7 +128,7 @@ export default function LoginPage() {
               <div style={{ display:"flex", alignItems:"center", gap:10, background:"rgba(255,255,255,0.04)", border:"0.5px solid rgba(99,179,237,0.2)", borderRadius:9, padding:"10px 14px" }}>
                 <i className="fa-solid fa-envelope" style={{ color:"#64748b", fontSize:12 }} />
                 <input type="email" value={form.email} onChange={e => update("email", e.target.value)}
-                  placeholder="your@email.com" required
+                  placeholder="your@email.com" required autoComplete="off"
                   style={{ background:"none", border:"none", outline:"none", color:"#e2e8f0", fontSize:13, width:"100%", fontFamily:"var(--font-main)" }} />
               </div>
             </div>
@@ -139,7 +139,7 @@ export default function LoginPage() {
                 <div style={{ display:"flex", alignItems:"center", gap:10, background:"rgba(255,255,255,0.04)", border:"0.5px solid rgba(99,179,237,0.2)", borderRadius:9, padding:"10px 14px" }}>
                   <i className="fa-solid fa-at" style={{ color:"#64748b", fontSize:12 }} />
                   <input type="text" value={form.username} onChange={e => update("username", e.target.value)}
-                    placeholder="your_username" required
+                    placeholder="your_username" required autoComplete="off"
                     style={{ background:"none", border:"none", outline:"none", color:"#e2e8f0", fontSize:13, width:"100%", fontFamily:"var(--font-main)" }} />
                 </div>
               </div>
@@ -150,7 +150,7 @@ export default function LoginPage() {
               <div style={{ display:"flex", alignItems:"center", gap:10, background:"rgba(255,255,255,0.04)", border:"0.5px solid rgba(99,179,237,0.2)", borderRadius:9, padding:"10px 14px" }}>
                 <i className="fa-solid fa-lock" style={{ color:"#64748b", fontSize:12 }} />
                 <input type={showPass ? "text" : "password"} value={form.password} onChange={e => update("password", e.target.value)}
-                  placeholder={mode === "register" ? "Minimum 6 characters" : "Your password"} required
+                  placeholder={mode === "register" ? "Minimum 6 characters" : "Your password"} required autoComplete="new-password"
                   style={{ background:"none", border:"none", outline:"none", color:"#e2e8f0", fontSize:13, width:"100%", fontFamily:"var(--font-main)" }} />
                 <i className={"fa-solid " + (showPass ? "fa-eye-slash" : "fa-eye")} onClick={() => setShowPass(p => !p)}
                   style={{ color:"#64748b", fontSize:12, cursor:"pointer", flexShrink:0 }} />
