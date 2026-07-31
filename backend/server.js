@@ -23,11 +23,7 @@ app.use(cors({
       "http://localhost:5173",
       "https://dsa-analyzer-pearl.vercel.app",
     ]
-    // Allow any vercel.app subdomain for preview deployments
-    if (!origin ||
-      allowed.some(o => origin === o) ||
-      origin.endsWith(".vercel.app")
-    ) {
+    if (!origin || allowed.some(o => origin === o) || origin.endsWith(".vercel.app")) {
       callback(null, true)
     } else {
       callback(new Error("Not allowed by CORS: " + origin))
@@ -38,9 +34,9 @@ app.use(cors({
 app.use(express.json())
 
 app.use(session({
-store: process.env.NODE_ENV === "production"
-  ? new pgSession({ conString: process.env.DATABASE_URL, tableName: "sessions", createTableIfMissing: true })
-  : new ConnectSQLite({ db: "sessions.db", dir: __dirname }),
+  store: process.env.NODE_ENV === "production"
+    ? new pgSession({ conString: process.env.DATABASE_URL, tableName: "sessions", createTableIfMissing: true })
+    : new ConnectSQLite({ db: "sessions.db", dir: __dirname }),
   secret:            process.env.SESSION_SECRET || "fallback_secret",
   resave:            false,
   saveUninitialized: false,
@@ -222,26 +218,25 @@ app.get("/auth/me", (req, res) => {
 // ─── Saved Profiles Routes ────────────────────────────────────────────────────
 app.get("/auth/profiles", requireAuth, async (req, res) => {
   try {
-    const profiles = await profileQueries.getByUser(req.user.id);
-
-    res.json({ profiles });
+    const profiles = await profileQueries.getByUser(req.user.id)
+    res.json({ profiles })
   } catch (err) {
-    console.error("Get profiles error:", err);
-    res.status(500).json({ error: err.message });
+    console.error("Get profiles error:", err)
+    res.status(500).json({ error: err.message })
   }
-});
+})
 
 app.post("/auth/profiles", requireAuth, async (req, res) => {
   const { leetcode_username, nickname, is_primary } = req.body
   if (!leetcode_username) return res.status(400).json({ error: "LeetCode username required." })
   try {
     await profileQueries.save({
-      id:                uuidv4(),
-      user_id:           req.user.id,
+      id:               uuidv4(),
+      user_id:          req.user.id,
       leetcode_username,
-      nickname:          nickname || null,
-      is_primary:        is_primary ? 1 : 0,
-      last_analyzed:     new Date().toISOString(),
+      nickname:         nickname || null,
+      is_primary:       is_primary ? 1 : 0,
+      last_analyzed:    new Date().toISOString(),
     })
     if (is_primary) await profileQueries.setPrimary(leetcode_username, req.user.id)
     res.json({ message: "Profile saved!" })
@@ -250,22 +245,15 @@ app.post("/auth/profiles", requireAuth, async (req, res) => {
   }
 })
 
-// Firebase Google Auth route
+// Firebase Google Auth
 app.post("/auth/firebase", async (req, res) => {
   try {
     const { uid, email, name, avatar } = req.body
-
-    // Only allow Gmail accounts
     if (!email.endsWith("@gmail.com")) {
       return res.status(403).json({ error: "Only Gmail accounts are allowed." })
     }
-
-    // Check if user already exists
     let user = await userQueries.findByEmail(email)
-
     if (!user) {
-      // Create new user from Google account
-      const { v4: uuidv4 } = require("uuid")
       const newUser = {
         id:        uid,
         email:     email,
@@ -277,21 +265,87 @@ app.post("/auth/firebase", async (req, res) => {
       await userQueries.create(newUser)
       user = await userQueries.findByEmail(email)
     }
-
-    // Log in the user via session
     const { password, ...safeUser } = user
     req.login(safeUser, (err) => {
       if (err) return res.status(500).json({ error: "Login failed." })
       res.json({ user: safeUser, message: "Signed in with Google!" })
     })
-
   } catch (err) {
     console.error("Firebase auth error:", err)
     res.status(500).json({ error: "Authentication failed." })
   }
 })
 
+app.delete("/auth/profiles/:username", requireAuth, async (req, res) => {
+  await profileQueries.delete(req.user.id, req.params.username)
+  res.json({ message: "Profile removed." })
+})
 
+// ─── Health Check ─────────────────────────────────────────────────────────────
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", authenticated: req.isAuthenticated(), timestamp: new Date().toISOString() })
+})
+
+// ─── LeetCode API Routes ──────────────────────────────────────────────────────
+app.get("/api/user/:username", requireAuth, async (req, res) => {
+  const { username } = req.params
+  const cacheKey = `full_${req.user.id}_${username}`
+  const cached   = cache.get(cacheKey)
+  if (cached) return res.json({ ...cached, cached: true })
+
+  try {
+    const [profileData, solvedData, calendarData, topicData, contestData, langData] =
+      await Promise.allSettled([
+        lcQuery(Q_PROFILE,    { username }),
+        lcQuery(Q_SOLVED,     { username }),
+        lcQuery(Q_CALENDAR,   { username, year: new Date().getFullYear() }),
+        lcQuery(Q_TOPIC_TAGS, { username }),
+        lcQuery(Q_CONTEST,    { username }),
+        lcQuery(Q_LANGUAGE,   { username }),
+      ])
+
+    const getValue = r => r.status === "fulfilled" ? r.value : null
+
+    const profile  = getValue(profileData)?.matchedUser
+    const solved   = getValue(solvedData)
+    const calendar = getValue(calendarData)?.matchedUser?.userCalendar
+    const topics   = getValue(topicData)?.matchedUser?.tagProblemCounts
+    const contest  = getValue(contestData)
+    const lang     = getValue(langData)?.matchedUser?.languageProblemCount
+
+    if (!profile) {
+      return res.status(404).json({
+        error: `User "${username}" does not exist on LeetCode. Please check the username and try again.`
+      })
+    }
+
+    const acStats = solved?.matchedUser?.submitStats?.acSubmissionNum || []
+    const beats   = solved?.matchedUser?.problemsSolvedBeatsStats    || []
+    const contestRank    = solved?.userContestRanking || contest?.userContestRanking
+    const contestHistory = contest?.userContestRankingHistory || []
+
+    const findAC = diff => acStats.find(s => s.difficulty === diff) || { count: 0, submissions: 0 }
+    const allAC  = findAC("All")
+    const easyAC = findAC("Easy")
+    const medAC  = findAC("Medium")
+    const hardAC = findAC("Hard")
+
+    let calendarParsed = {}
+    try { calendarParsed = JSON.parse(calendar?.submissionCalendar || "{}") } catch(_) {}
+
+    const contestChart = contestHistory
+      .filter(c => c.attended && c.rating)
+      .slice(-30)
+      .map(c => ({
+        contest:        c.contest?.title || "",
+        date:           c.contest?.startTime
+          ? new Date(c.contest.startTime * 1000).toLocaleDateString("en-US", { month: "short", year: "2-digit" })
+          : "",
+        rating:         Math.round(c.rating),
+        ranking:        c.ranking,
+        problemsSolved: c.problemsSolved,
+        totalProblems:  c.totalProblems,
+      }))
 
     const result = {
       username,
@@ -347,29 +401,25 @@ app.post("/auth/firebase", async (req, res) => {
     }
 
     // Save to history & profiles
-try {
-  await historyQueries.add({
-    id: uuidv4(),
-    user_id: req.user.id,
-    leetcode_username: username,
-    total_solved: result.solved.total,
-    rating: result.contest.rating,
-  });
-
-  await profileQueries.save({
-    id: uuidv4(),
-    user_id: req.user.id,
-    leetcode_username: username,
-    nickname: null,
-    is_primary: 0,
-    last_analyzed: new Date().toISOString(),
-  });
-
-  console.log("Profile saved successfully:", username);
-
-} catch (err) {
-  console.error("Save profile error:", err);
-}
+    try {
+      await historyQueries.add({
+        id:                uuidv4(),
+        user_id:           req.user.id,
+        leetcode_username: username,
+        total_solved:      result.solved.total,
+        rating:            result.contest.rating,
+      })
+      await profileQueries.save({
+        id:                uuidv4(),
+        user_id:           req.user.id,
+        leetcode_username: username,
+        nickname:          null,
+        is_primary:        0,
+        last_analyzed:     new Date().toISOString(),
+      })
+    } catch (saveErr) {
+      console.error("Save error:", saveErr)
+    }
 
     cache.set(cacheKey, result)
     res.json(result)
@@ -433,7 +483,7 @@ function timeAgo(timestamp) {
   if (diff < 3600)   return `${Math.floor(diff / 60)}m ago`
   if (diff < 86400)  return `${Math.floor(diff / 3600)}h ago`
   if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`
-  return new Date(timestamp * 1000).toLocaleDateString("en-US", { month:"short", day:"numeric" })
+  return new Date(timestamp * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })
 }
 
 // ─── Start ────────────────────────────────────────────────────────────────────
@@ -441,7 +491,5 @@ const PORT = process.env.PORT || 5000
 app.listen(PORT, () => {
   console.log(`\n🚀 DSA Analyzer Backend running on http://localhost:${PORT}`)
   console.log(`🔐 Auth: Session-based (email + password)`)
-  console.log(
-  `🗄️ Database: ${process.env.DATABASE_URL ? "PostgreSQL" : "SQLite"}`
-);
+  console.log(`🗄️  Database: ${process.env.DATABASE_URL ? "PostgreSQL" : "SQLite"}`)
 })
