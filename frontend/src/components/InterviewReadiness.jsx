@@ -78,7 +78,7 @@ export default function InterviewReadiness({ data }) {
         </div>
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"200px 1fr", gap:32, alignItems:"start" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"200px 1fr", gap:20, alignItems:"start" }}>
 
         {/* Gauge */}
         <div>

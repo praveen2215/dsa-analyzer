@@ -8,6 +8,23 @@ import SavedProfiles from "./pages/SavedProfiles"
 import AnalysisHistory from "./pages/AnalysisHistory"
 import { useUserData } from "./hooks/useUserData"
 
+// Mobile style injection
+const mobileStyles = `
+  @media (max-width: 600px) {
+    [style*="gridTemplateColumns"] {
+      grid-template-columns: 1fr !important;
+    }
+    [style*="display:\"grid\""] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+`
+if (typeof document !== "undefined") {
+  const styleEl = document.createElement("style")
+  styleEl.textContent = mobileStyles
+  document.head.appendChild(styleEl)
+}
+
 function AppContent() {
   const { user, loading: authLoading, logout } = useAuth()
   const { data, recent, loading, error, username, analyze, clearData } = useUserData(user?.id)

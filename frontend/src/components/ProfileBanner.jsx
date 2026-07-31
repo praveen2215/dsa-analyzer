@@ -25,7 +25,7 @@ export default function ProfileBanner({ data }) {
     <div className="card" style={{ padding:"22px 28px", marginBottom:24, position:"relative", overflow:"hidden" }}>
       <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg,rgba(99,179,237,0.03),rgba(183,148,244,0.03))", pointerEvents:"none" }} />
 
-      <div style={{ display:"flex", alignItems:"center", gap:20, marginBottom:16 }}>
+      <div style={{ display:"flex", alignItems:"flex-start", gap:12, marginBottom:16, flexWrap:"wrap" }}>
         {/* Avatar */}
         <div style={{ position:"relative", flexShrink:0 }}>
           {profile.avatar
@@ -52,7 +52,7 @@ export default function ProfileBanner({ data }) {
         </div>
 
         {/* Quick stats */}
-        <div style={{ display:"flex", gap:28, borderLeft:"0.5px solid var(--border2)", paddingLeft:24 }}>
+        <div style={{ display:"flex", gap:16, borderLeft:"0.5px solid var(--border2)", paddingLeft:16, flexWrap:"wrap" }}>
           {[
             { val:solved.total.toLocaleString(), lbl:"Solved",     color:"#3B6D11" },
             { val:contest.rating || "—",         lbl:"Rating",     color:"#185FA5" },
