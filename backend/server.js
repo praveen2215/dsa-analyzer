@@ -356,7 +356,7 @@ try {
     rating: result.contest.rating,
   });
 
-  await await profileQueries.save({
+  await profileQueries.save({
     id: uuidv4(),
     user_id: req.user.id,
     leetcode_username: username,
