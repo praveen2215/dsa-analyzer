@@ -22,6 +22,7 @@ app.use(cors({
     const allowed = [
       "http://localhost:5173",
       "https://dsa-analyzer-pearl.vercel.app",
+      "https://dsa-analyzer-n3qeqbi0o-praveen-mamillapalli-s-projects.vercel.app",
     ]
     if (!origin || allowed.some(o => origin === o) || origin.endsWith(".vercel.app")) {
       callback(null, true)
