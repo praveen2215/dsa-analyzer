@@ -18,7 +18,7 @@ import SkillGapAnalyzer from "../components/SkillGapAnalyzer"
 
 export default function Dashboard({ data, recent, onAnalyze, shareUrl }) {
   return (
-    <div className="fade-in" style={{ maxWidth:1400, margin:"0 auto", padding:"32px 28px 60px" }}>
+    <div className="fade-in" style={{ maxWidth:1400, margin:"0 auto", padding:"20px 16px 60px" }}>
 
       <ShareBar username={data.username} shareUrl={shareUrl} />
       <ProfileBanner data={data} />
@@ -45,7 +45,7 @@ export default function Dashboard({ data, recent, onAnalyze, shareUrl }) {
       <RatingChart contest={data.contest} />
 
       <div className="section-label">Solved Problems Breakdown</div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20, marginBottom:24 }}>
+      <div className="dashboard-grid-2">
         <DifficultyCard data={data} />
         <RecentSubmissions recent={recent} username={data.username} />
       </div>
@@ -57,7 +57,7 @@ export default function Dashboard({ data, recent, onAnalyze, shareUrl }) {
       <TopicHeatmap topics={data.topics} solved={data.solved} />
 
       <div className="section-label">Language & Goals</div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20, marginBottom:24 }}>
+      <div className="dashboard-grid-2">
         <LanguageBreakdown languages={data.languages} recent={recent} />
         <GoalTracker data={data} />
       </div>
