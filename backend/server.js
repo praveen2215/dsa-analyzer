@@ -23,8 +23,11 @@ app.use(cors({
       "http://localhost:5173",
       "https://dsa-analyzer-pearl.vercel.app",
     ]
-    // Allow if origin matches or no origin (mobile apps, Postman)
-    if (!origin || allowed.some(o => origin.replace(/\/$/, "") === o.replace(/\/$/, ""))) {
+    // Allow any vercel.app subdomain for preview deployments
+    if (!origin ||
+      allowed.some(o => origin === o) ||
+      origin.endsWith(".vercel.app")
+    ) {
       callback(null, true)
     } else {
       callback(new Error("Not allowed by CORS: " + origin))
@@ -228,11 +231,11 @@ app.get("/auth/profiles", requireAuth, async (req, res) => {
   }
 });
 
-app.post("/auth/profiles", requireAuth, (req, res) => {
+app.post("/auth/profiles", requireAuth, async (req, res) => {
   const { leetcode_username, nickname, is_primary } = req.body
   if (!leetcode_username) return res.status(400).json({ error: "LeetCode username required." })
   try {
-    profileQueries.save.run({
+    await profileQueries.save({
       id:                uuidv4(),
       user_id:           req.user.id,
       leetcode_username,
@@ -240,7 +243,7 @@ app.post("/auth/profiles", requireAuth, (req, res) => {
       is_primary:        is_primary ? 1 : 0,
       last_analyzed:     new Date().toISOString(),
     })
-    if (is_primary) profileQueries.setPrimary.run(leetcode_username, req.user.id)
+    if (is_primary) await profileQueries.setPrimary(leetcode_username, req.user.id)
     res.json({ message: "Profile saved!" })
   } catch (err) {
     res.status(500).json({ error: "Failed to save profile." })
@@ -288,113 +291,7 @@ app.post("/auth/firebase", async (req, res) => {
   }
 })
 
-// Google Sign-In via Firebase
-app.post("/auth/firebase", async (req, res) => {
-  try {
-    const { uid, email, name, avatar } = req.body
 
-    if (!email.endsWith("@gmail.com")) {
-      return res.status(403).json({ error: "Only Gmail accounts are allowed." })
-    }
-
-    let user = await userQueries.findByEmail(email)
-
-    if (!user) {
-      const { v4: uuidv4 } = require("uuid")
-      const username = email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "_")
-      const newUser = {
-        id:        uid,
-        email:     email,
-        username:  username,
-        password:  null,
-        google_id: uid,
-        avatar:    avatar || null,
-      }
-      await userQueries.create(newUser)
-      user = await userQueries.findByEmail(email)
-    }
-
-    const { password: _, ...safeUser } = user
-    req.login(safeUser, (err) => {
-      if (err) return res.status(500).json({ error: "Login failed." })
-      res.json({ user: safeUser, message: "Signed in with Google!" })
-    })
-  } catch (err) {
-    console.error("Firebase auth error:", err)
-    res.status(500).json({ error: "Authentication failed." })
-  }
-})
-
-app.delete("/auth/profiles/:username", requireAuth, async (req, res) => {
-  await profileQueries.delete(req.user.id, req.params.username)
-  res.json({ message: "Profile removed." })
-})
-
-// ─── Health Check ─────────────────────────────────────────────────────────────
-app.get("/api/health", (req, res) => {
-  res.json({ status:"ok", authenticated: req.isAuthenticated(), timestamp: new Date().toISOString() })
-})
-
-// ─── LeetCode API Routes ──────────────────────────────────────────────────────
-app.get("/api/user/:username", requireAuth, async (req, res) => {
-  const { username } = req.params
-  const cacheKey = `full_${req.user.id}_${username}`
-  const cached   = cache.get(cacheKey)
-  if (cached) return res.json({ ...cached, cached: true })
-
-  try {
-    const [profileData, solvedData, calendarData, topicData, contestData, langData] =
-      await Promise.allSettled([
-        lcQuery(Q_PROFILE,    { username }),
-        lcQuery(Q_SOLVED,     { username }),
-        lcQuery(Q_CALENDAR,   { username, year: new Date().getFullYear() }),
-        lcQuery(Q_TOPIC_TAGS, { username }),
-        lcQuery(Q_CONTEST,    { username }),
-        lcQuery(Q_LANGUAGE,   { username }),
-      ])
-
-    const getValue = r => r.status === "fulfilled" ? r.value : null
-
-    const profile  = getValue(profileData)?.matchedUser
-    const solved   = getValue(solvedData)
-    const calendar = getValue(calendarData)?.matchedUser?.userCalendar
-    const topics   = getValue(topicData)?.matchedUser?.tagProblemCounts
-    const contest  = getValue(contestData)
-    const lang     = getValue(langData)?.matchedUser?.languageProblemCount
-
-    if (!profile) {
-      return res.status(404).json({
-        error: `User "${username}" does not exist on LeetCode. Please check the username and try again.`
-      })
-    }
-
-    const acStats = solved?.matchedUser?.submitStats?.acSubmissionNum || []
-    const beats   = solved?.matchedUser?.problemsSolvedBeatsStats    || []
-    const contestRank    = solved?.userContestRanking || contest?.userContestRanking
-    const contestHistory = contest?.userContestRankingHistory || []
-
-    const findAC = diff => acStats.find(s => s.difficulty === diff) || { count:0, submissions:0 }
-    const allAC  = findAC("All")
-    const easyAC = findAC("Easy")
-    const medAC  = findAC("Medium")
-    const hardAC = findAC("Hard")
-
-    let calendarParsed = {}
-    try { calendarParsed = JSON.parse(calendar?.submissionCalendar || "{}") } catch(_) {}
-
-    const contestChart = contestHistory
-      .filter(c => c.attended && c.rating)
-      .slice(-30)
-      .map(c => ({
-        contest:        c.contest?.title || "",
-        date:           c.contest?.startTime
-          ? new Date(c.contest.startTime * 1000).toLocaleDateString("en-US", { month:"short", year:"2-digit" })
-          : "",
-        rating:         Math.round(c.rating),
-        ranking:        c.ranking,
-        problemsSolved: c.problemsSolved,
-        totalProblems:  c.totalProblems,
-      }))
 
     const result = {
       username,
@@ -459,7 +356,7 @@ try {
     rating: result.contest.rating,
   });
 
-  await profileQueries.save({
+  await await profileQueries.save({
     id: uuidv4(),
     user_id: req.user.id,
     leetcode_username: username,

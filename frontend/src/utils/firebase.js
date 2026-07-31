@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app"
+import { initializeApp }                          from "firebase/app"
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth"
 
 const firebaseConfig = {
@@ -7,15 +7,15 @@ const firebaseConfig = {
   projectId:         "dsa-analyzer-78267",
   storageBucket:     "dsa-analyzer-78267.firebasestorage.app",
   messagingSenderId: "102333960145",
-  appId:             "1:102333960145:web:642fdd1752d21637f51af0",
+  appId:             "1:102333960145:web:642fdd1752d21637f51af0"
 }
 
-const app      = initializeApp(firebaseConfig)
+const app = initializeApp(firebaseConfig)
+
 export const auth     = getAuth(app)
 export const provider = new GoogleAuthProvider()
 
-// Only allow Gmail accounts
-provider.setCustomParameters({ hd: "gmail.com" })
+provider.setCustomParameters({ prompt: "select_account" })
 
 export const signInWithGoogle = () => signInWithPopup(auth, provider)
 export const signOutUser      = () => signOut(auth)
