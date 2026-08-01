@@ -313,10 +313,7 @@ body { overflow-x: hidden; max-width: 100vw; }
     grid-template-columns: 1fr !important;
   }
 
-  /* Force all inline grids to single column */
-  div[style*="gridTemplateColumns"] {
-    grid-template-columns: 1fr !important;
-  }
+
 
   /* Smaller padding on cards */
   .card { padding: 14px !important; }
@@ -335,4 +332,25 @@ body { overflow-x: hidden; max-width: 100vw; }
   /* Font size adjustments */
   .card-title    { font-size: 13px !important; }
   .card-subtitle { font-size: 11px !important; }
+}
+/* ── Topic heatmap filter buttons — always horizontal ── */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--sp-5);
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.card-header > div:last-child {
+  display: flex;
+  flex-direction: row !important;
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+
+.card-header button {
+  white-space: nowrap;
+  flex-shrink: 0;
 }

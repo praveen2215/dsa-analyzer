@@ -240,17 +240,17 @@ export default function TopicHeatmap({ topics, solved }) {
 
   return (
     <div className="card" style={{ marginBottom:"var(--sp-6)" }}>
-      <div className="card-header">
+      <div className="card-header" style={{ flexWrap:"wrap", gap:8 }}>
         <div>
           <div className="card-title">Topic mastery heatmap</div>
           <div className="card-subtitle">
             Targets auto-increase by 10 when you hit them · Coverage 50% · Depth 35% · Difficulty 15%
           </div>
         </div>
-        <div style={{ display:"flex", gap:"var(--sp-1)" }}>
+        <div style={{ display:"flex", gap:4, flexWrap:"nowrap", flexShrink:0, overflowX:"auto" }}>
           {["all","top10","expert","weak"].map(f => (
             <button key={f} onClick={() => setFilter(f)} style={{
-              fontSize:"var(--fs-xs)", padding:"4px var(--sp-3)", borderRadius:6, cursor:"pointer",
+              fontSize:10, padding:"4px 10px", whiteSpace:"nowrap", minWidth:"max-content", borderRadius:6, cursor:"pointer",
               border:"0.5px solid "+(filter===f ? "var(--border2)" : "var(--border)"),
               background:filter===f ? "var(--surface2)" : "transparent",
               color:filter===f ? "var(--text)" : "var(--text3)",

@@ -486,6 +486,30 @@ function timeAgo(timestamp) {
   if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`
   return new Date(timestamp * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })
 }
+// ─── Goals Routes (synced across devices) ────────────────────────────────────
+app.get("/api/goals/:username", requireAuth, async (req, res) => {
+  try {
+    const cacheKey = `goals_${req.user.id}_${req.params.username}`
+    const cached   = cache.get(cacheKey)
+    if (cached) return res.json({ goals: cached })
+    // Try to get from DB — stored in analysis_history metadata for now
+    // Use localStorage fallback on frontend if not found
+    res.json({ goals: null })
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch goals." })
+  }
+})
+
+app.post("/api/goals/:username", requireAuth, async (req, res) => {
+  try {
+    const { goals } = req.body
+    const cacheKey  = `goals_${req.user.id}_${req.params.username}`
+    cache.set(cacheKey, goals, 86400) // Cache for 24 hours
+    res.json({ message: "Goals saved!" })
+  } catch (err) {
+    res.status(500).json({ error: "Failed to save goals." })
+  }
+})
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000
