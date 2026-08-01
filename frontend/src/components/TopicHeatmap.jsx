@@ -247,10 +247,11 @@ export default function TopicHeatmap({ topics, solved }) {
             Targets auto-increase by 10 when you hit them · Coverage 50% · Depth 35% · Difficulty 15%
           </div>
         </div>
-        <div style={{ display:"flex", gap:4, flexWrap:"nowrap", flexShrink:0, overflowX:"auto" }}>
+        <div style={{ display:"flex", gap:"var(--sp-1)", flexWrap:"nowrap", flexShrink:0 }}>
           {["all","top10","expert","weak"].map(f => (
             <button key={f} onClick={() => setFilter(f)} style={{
-              fontSize:10, padding:"4px 10px", whiteSpace:"nowrap", minWidth:"max-content", borderRadius:6, cursor:"pointer",
+              fontSize:"var(--fs-xs)", padding:"4px 8px", whiteSpace:"nowrap", borderRadius:6, cursor:"pointer",
+              whiteSpace:"nowrap", minWidth:"fit-content",
               border:"0.5px solid "+(filter===f ? "var(--border2)" : "var(--border)"),
               background:filter===f ? "var(--surface2)" : "transparent",
               color:filter===f ? "var(--text)" : "var(--text3)",
